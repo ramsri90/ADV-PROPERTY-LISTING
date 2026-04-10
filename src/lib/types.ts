@@ -40,3 +40,11 @@ export interface Property {
   isFeatured: boolean;
   createdAt: string;
 }
+
+export interface PropertyFilters {
+  propertyTypes: string[];
+  priceMin: string;
+  priceMax: string;
+  bedrooms: number | null;
+  amenities: string[];
+}

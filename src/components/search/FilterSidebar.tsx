@@ -1,26 +1,18 @@
 'use client';
 
-import { Button } from "@/components/ui/Button";
+import { Dispatch, SetStateAction } from "react";
+import { PropertyFilters } from "@/lib/types";
+import {
+  isPropertyTypeGroupSelected,
+  togglePropertyTypeGroup,
+} from "@/lib/propertyFilters";
 
 interface FilterSidebarProps {
-  filters: {
-    propertyTypes: string[];
-    priceMin: string;
-    priceMax: string;
-    bedrooms: number | null;
-    amenities: string[];
-  };
-  setFilters: (filters: any) => void;
+  filters: PropertyFilters;
+  setFilters: Dispatch<SetStateAction<PropertyFilters>>;
 }
 
 export function FilterSidebar({ filters, setFilters }: FilterSidebarProps) {
-  const handlePropertyTypeChange = (type: string) => {
-    const newTypes = filters.propertyTypes.includes(type)
-      ? filters.propertyTypes.filter(t => t !== type)
-      : [...filters.propertyTypes, type];
-    setFilters({ ...filters, propertyTypes: newTypes });
-  };
-
   const handleAmenityChange = (amenity: string) => {
     const newAmenities = filters.amenities.includes(amenity)
       ? filters.amenities.filter(a => a !== amenity)
@@ -43,82 +35,97 @@ export function FilterSidebar({ filters, setFilters }: FilterSidebarProps) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl border-2 border-gray-200 shadow-md space-y-8 sticky top-28">
+    <div className="sticky top-28 rounded-[1.35rem] border border-slate-200 bg-white p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)] space-y-8">
       <div className="flex justify-between items-center">
-        <h3 className="font-semibold text-blue-950 text-lg">Filters</h3>
-        <button onClick={clearFilters} className="text-sm text-amber-600 hover:text-amber-700 font-medium">Clear All</button>
+        <h3 className="text-[2rem] font-semibold tracking-[-0.02em] text-blue-950">Filters</h3>
+        <button
+          onClick={clearFilters}
+          className="text-sm font-medium text-orange-500 transition-colors hover:text-orange-600"
+        >
+          Clear All
+        </button>
       </div>
 
       <div>
-        <h3 className="font-semibold text-blue-950 mb-4">Property Type</h3>
+        <h3 className="mb-4 text-[1.15rem] font-semibold text-blue-950">Property Type</h3>
         <div className="space-y-3">
           <label className="flex items-center space-x-3 cursor-pointer">
             <input 
               type="checkbox" 
-              checked={filters.propertyTypes.includes('house')}
-              onChange={() => handlePropertyTypeChange('house')}
-              className="h-4 w-4 rounded border-gray-300 text-blue-950 focus:ring-blue-950" 
+              checked={isPropertyTypeGroupSelected(filters.propertyTypes, 'house')}
+              onChange={() =>
+                setFilters((currentFilters) => ({
+                  ...currentFilters,
+                  propertyTypes: togglePropertyTypeGroup(currentFilters.propertyTypes, 'house'),
+                }))
+              }
+              className="h-5 w-5 rounded-[0.3rem] border border-slate-400 text-blue-600 focus:ring-2 focus:ring-blue-200" 
             />
-            <span className="text-gray-700">House</span>
+            <span className="text-[1.05rem] text-slate-600">House</span>
           </label>
           <label className="flex items-center space-x-3 cursor-pointer">
             <input 
               type="checkbox" 
-              checked={filters.propertyTypes.includes('apartment') || filters.propertyTypes.includes('condo')}
-              onChange={() => {
-                handlePropertyTypeChange('apartment');
-                handlePropertyTypeChange('condo');
-              }}
-              className="h-4 w-4 rounded border-gray-300 text-blue-950 focus:ring-blue-950" 
+              checked={isPropertyTypeGroupSelected(filters.propertyTypes, 'apartment_condo')}
+              onChange={() =>
+                setFilters((currentFilters) => ({
+                  ...currentFilters,
+                  propertyTypes: togglePropertyTypeGroup(currentFilters.propertyTypes, 'apartment_condo'),
+                }))
+              }
+              className="h-5 w-5 rounded-[0.3rem] border border-slate-400 text-blue-600 focus:ring-2 focus:ring-blue-200" 
             />
-            <span className="text-gray-700">Apartment / Condo</span>
+            <span className="text-[1.05rem] text-slate-600">Apartment / Condo</span>
           </label>
            <label className="flex items-center space-x-3 cursor-pointer">
             <input 
               type="checkbox" 
-              checked={filters.propertyTypes.includes('office') || filters.propertyTypes.includes('retail')}
-              onChange={() => {
-                handlePropertyTypeChange('office');
-                handlePropertyTypeChange('retail');
-              }}
-              className="h-4 w-4 rounded border-gray-300 text-blue-950 focus:ring-blue-950" 
+              checked={isPropertyTypeGroupSelected(filters.propertyTypes, 'commercial')}
+              onChange={() =>
+                setFilters((currentFilters) => ({
+                  ...currentFilters,
+                  propertyTypes: togglePropertyTypeGroup(currentFilters.propertyTypes, 'commercial'),
+                }))
+              }
+              className="h-5 w-5 rounded-[0.3rem] border border-slate-400 text-blue-600 focus:ring-2 focus:ring-blue-200" 
             />
-            <span className="text-gray-700">Commercial</span>
+            <span className="text-[1.05rem] text-slate-600">Commercial</span>
           </label>
         </div>
       </div>
 
       <div>
-        <h3 className="font-semibold text-blue-950 mb-4">Price Range</h3>
+        <h3 className="mb-4 text-[1.15rem] font-semibold text-blue-950">Price Range</h3>
         <div className="flex gap-4">
            <input 
              type="number" 
              placeholder="Min" 
              value={filters.priceMin}
              onChange={(e) => setFilters({ ...filters, priceMin: e.target.value })}
-             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:border-blue-950 focus:ring-1 focus:ring-blue-950" 
+             className="w-full rounded-lg border border-slate-300 px-4 py-3 text-base text-slate-700 outline-none transition focus:border-blue-950 focus:ring-2 focus:ring-blue-100" 
            />
            <input 
              type="number" 
              placeholder="Max" 
              value={filters.priceMax}
              onChange={(e) => setFilters({ ...filters, priceMax: e.target.value })}
-             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:border-blue-950 focus:ring-1 focus:ring-blue-950" 
+             className="w-full rounded-lg border border-slate-300 px-4 py-3 text-base text-slate-700 outline-none transition focus:border-blue-950 focus:ring-2 focus:ring-blue-100" 
            />
         </div>
       </div>
 
        <div>
-        <h3 className="font-semibold text-blue-950 mb-4">Bedrooms</h3>
+        <h3 className="mb-4 text-[1.15rem] font-semibold text-blue-950">Bedrooms</h3>
         <div className="flex gap-2">
            {[1, 2, 3, 4, 5].map((num) => (
              <button 
                key={num} 
+               type="button"
                onClick={() => handleBedroomSelect(num)}
-               className={`h-10 w-10 rounded-md border-2 transition-colors text-sm font-medium ${
+               className={`h-11 w-11 rounded-lg border transition-colors text-base font-medium ${
                  filters.bedrooms === num 
-                   ? 'border-blue-950 bg-blue-950 text-white' 
-                   : 'border-gray-300 text-gray-700 hover:border-blue-950'
+                   ? 'border-blue-950 bg-blue-950 text-white shadow-sm' 
+                   : 'border-slate-300 bg-white text-slate-700 hover:border-blue-950'
                }`}
              >
                {num === 5 ? '5+' : num}
@@ -128,7 +135,7 @@ export function FilterSidebar({ filters, setFilters }: FilterSidebarProps) {
       </div>
 
       <div>
-        <h3 className="font-semibold text-blue-950 mb-4">Amenities</h3>
+        <h3 className="mb-4 text-[1.15rem] font-semibold text-blue-950">Amenities</h3>
         <div className="space-y-3">
            {['Pool', 'Waterfront', 'Gym', 'Parking', 'Doorman'].map((amenity) => (
              <label key={amenity} className="flex items-center space-x-3 cursor-pointer">
@@ -136,9 +143,9 @@ export function FilterSidebar({ filters, setFilters }: FilterSidebarProps) {
                   type="checkbox" 
                   checked={filters.amenities.includes(amenity)}
                   onChange={() => handleAmenityChange(amenity)}
-                  className="h-4 w-4 rounded border-gray-300 text-blue-950 focus:ring-blue-950" 
+                  className="h-5 w-5 rounded-[0.3rem] border border-slate-400 text-blue-600 focus:ring-2 focus:ring-blue-200" 
                 />
-                <span className="text-gray-700">{amenity}</span>
+                <span className="text-[1.05rem] text-slate-600">{amenity}</span>
             </label>
            ))}
         </div>

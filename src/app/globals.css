@@ -3,6 +3,13 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --surface: #ffffff;
+  --surface-muted: #f8fafc;
+  --surface-elevated: rgba(255, 255, 255, 0.8);
+  --border-color: #e5e7eb;
+  --text-strong: #172554;
+  --text-soft: #4b5563;
+  --text-muted: #6b7280;
 }
 
 @theme inline {
@@ -13,8 +20,79 @@
   --font-serif: var(--font-serif);
 }
 
+html[data-theme="dark"] {
+  --background: #07111f;
+  --foreground: #e5eefb;
+  --surface: #0f172a;
+  --surface-muted: #111c31;
+  --surface-elevated: rgba(15, 23, 42, 0.84);
+  --border-color: #243041;
+  --text-strong: #eff6ff;
+  --text-soft: #d5deee;
+  --text-muted: #94a3b8;
+}
+
+html,
 body {
-  background: #ffffff;
-  color: #171717;
+  background: var(--background);
+  color: var(--foreground);
   font-family: var(--font-sans);
+  transition: background-color 220ms ease, color 220ms ease;
+}
+
+body :where(.bg-white) {
+  background-color: var(--surface) !important;
+}
+
+body :where(.bg-gray-50) {
+  background-color: var(--surface-muted) !important;
+}
+
+body :where(.bg-white\/80) {
+  background-color: var(--surface-elevated) !important;
+}
+
+body :where(.border-gray-200, .border-slate-200, .border-slate-300, .border-gray-300, .border-white\/20) {
+  border-color: var(--border-color) !important;
+}
+
+body :where(.text-blue-950, .text-gray-900, .text-black, .text-slate-950) {
+  color: var(--text-strong) !important;
+}
+
+body :where(.text-gray-700, .text-gray-600, .text-slate-600, .text-slate-700) {
+  color: var(--text-soft) !important;
+}
+
+body :where(.text-gray-500, .text-gray-400, .text-slate-400) {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] body :where(.hover\:bg-gray-100:hover, .bg-gray-100) {
+  background-color: rgba(148, 163, 184, 0.12) !important;
+}
+
+html[data-theme="dark"] body :where(.shadow-md, .shadow-lg, .shadow-xl, .shadow-sm) {
+  box-shadow: 0 18px 40px rgba(2, 6, 23, 0.35) !important;
+}
+
+html[data-theme="dark"] body :where(input, textarea, select) {
+  background-color: #0b1324;
+  color: var(--text-strong);
+}
+
+html[data-theme="dark"] body :where(input::placeholder, textarea::placeholder) {
+  color: #7f8ea3;
+}
+
+html[data-theme="dark"] body :where(.bg-blue-950) {
+  background-color: #dbeafe !important;
+}
+
+html[data-theme="dark"] body :where(.text-white) {
+  color: #08111f !important;
+}
+
+html[data-theme="dark"] body :where(.hover\:bg-blue-900:hover, .hover\:bg-blue-950:hover) {
+  background-color: #bfdbfe !important;
 }

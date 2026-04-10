@@ -3,10 +3,70 @@
 import { useState, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { FilterSidebar } from "@/components/search/FilterSidebar";
-import { MapPlaceholder } from "@/components/search/MapPlaceholder";
 import { PropertyCard } from "@/components/property/PropertyCard";
 import { PROPERTIES } from "@/lib/data";
-import { Property } from "@/lib/types";
+import { Property, PropertyFilters } from "@/lib/types";
+import { applyPropertyFilters } from "@/lib/propertyFilters";
+
+const PROPERTIES_PER_PAGE = 4;
+
+function PaginatedPropertyResults({ properties }: { properties: Property[] }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(properties.length / PROPERTIES_PER_PAGE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * PROPERTIES_PER_PAGE;
+  const paginatedProperties = properties.slice(startIndex, startIndex + PROPERTIES_PER_PAGE);
+
+  return (
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {paginatedProperties.map((property) => (
+          <PropertyCard key={property.id} property={property} />
+        ))}
+      </div>
+
+      {properties.length > PROPERTIES_PER_PAGE && (
+        <div className="flex justify-center mt-12 space-x-2">
+          <button
+            type="button"
+            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+            disabled={safeCurrentPage === 1}
+            className="px-4 py-2 border-2 border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Previous
+          </button>
+          {Array.from({ length: totalPages }, (_, index) => {
+            const pageNumber = index + 1;
+            const isActive = pageNumber === safeCurrentPage;
+
+            return (
+              <button
+                key={pageNumber}
+                type="button"
+                onClick={() => setCurrentPage(pageNumber)}
+                className={`px-4 py-2 rounded-md font-bold ${
+                  isActive
+                    ? 'bg-blue-950 text-white'
+                    : 'border-2 border-gray-300 text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                {pageNumber}
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+            disabled={safeCurrentPage === totalPages}
+            className="px-4 py-2 border-2 border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
 
 function SearchContent() {
   const searchParams = useSearchParams();
@@ -16,7 +76,7 @@ function SearchContent() {
   const initialSell = searchParams.get('sell');
   
   // Filter state
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<PropertyFilters>({
     propertyTypes: [] as string[],
     priceMin: '',
     priceMax: '',
@@ -25,7 +85,7 @@ function SearchContent() {
   });
 
   // Filter properties
-  const filteredProperties = useMemo(() => {
+  const baseProperties = useMemo(() => {
     return PROPERTIES.filter((property: Property) => {
       // URL Param Filters
       if (initialStatus && property.status !== initialStatus) return false;
@@ -43,31 +103,21 @@ function SearchContent() {
         if (!matchesQuery) return false;
       }
 
-      // Property type filter
-      if (filters.propertyTypes.length > 0) {
-        if (!filters.propertyTypes.includes(property.category)) return false;
-      }
-
-      // Price filter
-      if (filters.priceMin && property.price < parseInt(filters.priceMin)) return false;
-      if (filters.priceMax && property.price > parseInt(filters.priceMax)) return false;
-
-      // Bedrooms filter
-      if (filters.bedrooms && property.specs.bedrooms) {
-        if (property.specs.bedrooms < filters.bedrooms) return false;
-      }
-
-      // Amenities filter
-      if (filters.amenities.length > 0) {
-        const hasAllAmenities = filters.amenities.every(amenity => 
-          property.features.some(feature => feature.toLowerCase().includes(amenity.toLowerCase()))
-        );
-        if (!hasAllAmenities) return false;
-      }
-
       return true;
     });
-  }, [initialQuery, filters]);
+  }, [initialQuery, initialSell, initialStatus, initialType]);
+
+  const filteredProperties = useMemo(
+    () => applyPropertyFilters(baseProperties, filters),
+    [baseProperties, filters]
+  );
+  const paginationKey = JSON.stringify({
+    initialQuery,
+    initialStatus,
+    initialType,
+    initialSell,
+    filters,
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 py-24">
@@ -95,26 +145,11 @@ function SearchContent() {
            {/* Map Removed as per request */}
            
            {filteredProperties.length > 0 ? (
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               {filteredProperties.map((property) => (
-                 <PropertyCard key={property.id} property={property} />
-               ))}
-             </div>
+             <PaginatedPropertyResults key={paginationKey} properties={filteredProperties} />
            ) : (
              <div className="text-center py-20">
                <p className="text-xl text-gray-600 mb-4">No properties found matching your criteria</p>
                <p className="text-gray-400">Try adjusting your filters or search terms</p>
-             </div>
-           )}
-           
-           {/* Pagination Mock */}
-           {filteredProperties.length > 0 && (
-             <div className="flex justify-center mt-12 space-x-2">
-               <button className="px-4 py-2 border-2 border-gray-300 rounded-md text-gray-600 hover:bg-gray-100">Previous</button>
-               <button className="px-4 py-2 bg-blue-950 text-white rounded-md font-bold">1</button>
-               <button className="px-4 py-2 border-2 border-gray-300 rounded-md text-gray-600 hover:bg-gray-100">2</button>
-               <button className="px-4 py-2 border-2 border-gray-300 rounded-md text-gray-600 hover:bg-gray-100">3</button>
-               <button className="px-4 py-2 border-2 border-gray-300 rounded-md text-gray-600 hover:bg-gray-100">Next</button>
              </div>
            )}
         </div>

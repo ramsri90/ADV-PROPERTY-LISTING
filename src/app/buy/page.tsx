@@ -4,44 +4,29 @@ import { useState, useMemo } from 'react';
 import { FilterSidebar } from "@/components/search/FilterSidebar";
 import { PropertyCard } from "@/components/property/PropertyCard";
 import { PROPERTIES } from "@/lib/data";
-import { Property } from "@/lib/types";
+import { Property, PropertyFilters } from "@/lib/types";
+import { applyPropertyFilters } from "@/lib/propertyFilters";
 import { Home, TrendingUp, Award } from 'lucide-react';
 
 export default function BuyPage() {
-  const [filters, setFilters] = useState({
-    propertyTypes: [] as string[],
+  const [filters, setFilters] = useState<PropertyFilters>({
+    propertyTypes: [],
     priceMin: '',
     priceMax: '',
-    bedrooms: null as number | null,
-    amenities: [] as string[],
+    bedrooms: null,
+    amenities: [],
   });
 
   // Filter only properties for sale
-  const filteredProperties = useMemo(() => {
-    return PROPERTIES.filter((property: Property) => {
-      if (property.status !== 'for-sale') return false;
+  const saleProperties = useMemo(
+    () => PROPERTIES.filter((property: Property) => property.status === 'for-sale'),
+    []
+  );
 
-      if (filters.propertyTypes.length > 0) {
-        if (!filters.propertyTypes.includes(property.category)) return false;
-      }
-
-      if (filters.priceMin && property.price < parseInt(filters.priceMin)) return false;
-      if (filters.priceMax && property.price > parseInt(filters.priceMax)) return false;
-
-      if (filters.bedrooms && property.specs.bedrooms) {
-        if (property.specs.bedrooms < filters.bedrooms) return false;
-      }
-
-      if (filters.amenities.length > 0) {
-        const hasAllAmenities = filters.amenities.every(amenity => 
-          property.features.some(feature => feature.toLowerCase().includes(amenity.toLowerCase()))
-        );
-        if (!hasAllAmenities) return false;
-      }
-
-      return true;
-    });
-  }, [filters]);
+  const filteredProperties = useMemo(
+    () => applyPropertyFilters(saleProperties, filters),
+    [filters, saleProperties]
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 py-24">

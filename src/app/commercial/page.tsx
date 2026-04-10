@@ -4,40 +4,29 @@ import { useState, useMemo } from 'react';
 import { FilterSidebar } from "@/components/search/FilterSidebar";
 import { PropertyCard } from "@/components/property/PropertyCard";
 import { PROPERTIES } from "@/lib/data";
-import { Property } from "@/lib/types";
+import { Property, PropertyFilters } from "@/lib/types";
+import { applyPropertyFilters } from "@/lib/propertyFilters";
 import { Building2, TrendingUp, Briefcase } from 'lucide-react';
 
 export default function CommercialPage() {
-  const [filters, setFilters] = useState({
-    propertyTypes: [] as string[],
+  const [filters, setFilters] = useState<PropertyFilters>({
+    propertyTypes: [],
     priceMin: '',
     priceMax: '',
-    bedrooms: null as number | null,
-    amenities: [] as string[],
+    bedrooms: null,
+    amenities: [],
   });
 
   // Filter only commercial properties
-  const filteredProperties = useMemo(() => {
-    return PROPERTIES.filter((property: Property) => {
-      if (property.type !== 'commercial') return false;
+  const commercialProperties = useMemo(
+    () => PROPERTIES.filter((property: Property) => property.type === 'commercial'),
+    []
+  );
 
-      if (filters.propertyTypes.length > 0) {
-        if (!filters.propertyTypes.includes(property.category)) return false;
-      }
-
-      if (filters.priceMin && property.price < parseInt(filters.priceMin)) return false;
-      if (filters.priceMax && property.price > parseInt(filters.priceMax)) return false;
-
-      if (filters.amenities.length > 0) {
-        const hasAllAmenities = filters.amenities.every(amenity => 
-          property.features.some(feature => feature.toLowerCase().includes(amenity.toLowerCase()))
-        );
-        if (!hasAllAmenities) return false;
-      }
-
-      return true;
-    });
-  }, [filters]);
+  const filteredProperties = useMemo(
+    () => applyPropertyFilters(commercialProperties, filters),
+    [commercialProperties, filters]
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 py-24">

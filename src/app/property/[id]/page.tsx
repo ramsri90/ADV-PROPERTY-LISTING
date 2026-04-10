@@ -1,10 +1,10 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, MapPin, Bed, Bath, Ruler, Check, Video, Box, Heart, Share2 } from 'lucide-react';
+import { MapPin, Bed, Bath, Ruler, Check } from 'lucide-react';
 import { PROPERTIES } from '@/lib/data';
-import { Button } from '@/components/ui/Button';
 import { MapPlaceholder } from '@/components/search/MapPlaceholder';
+import { formatIndianPrice } from '@/lib/whatsapp';
+import { PropertyActionPanel } from '@/components/property/PropertyActionPanel';
 
 // This is correct for Next.js 15+ async params
 export default async function PropertyDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -14,11 +14,6 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
   if (!property) {
     notFound();
   }
-
-  const formatPrice = (price: number) => {
-    const crores = price / 10000000;
-    return `₹${crores.toFixed(2)} Cr`;
-  };
 
   return (
     <div className="bg-white pb-20">
@@ -58,20 +53,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
         </div>
         
         {/* Action Buttons overlay */}
-        <div className="absolute bottom-6 right-6 flex gap-3 z-10">
-            <button className="bg-white px-4 py-2 rounded-lg text-blue-950 font-medium shadow-lg hover:bg-gray-100 flex items-center border-2 border-gray-200">
-                <Box size={18} className="mr-2" /> 3D Tour
-            </button>
-            <button className="bg-white px-4 py-2 rounded-lg text-blue-950 font-medium shadow-lg hover:bg-gray-100 flex items-center border-2 border-gray-200">
-                <Video size={18} className="mr-2" /> Video
-            </button>
-             <button className="bg-white p-2 rounded-lg text-blue-950 shadow-lg hover:bg-gray-100 border-2 border-gray-200">
-                <Share2 size={20} />
-            </button>
-             <button className="bg-white p-2 rounded-lg text-blue-950 shadow-lg hover:bg-gray-100 border-2 border-gray-200">
-                <Heart size={20} />
-            </button>
-        </div>
+        <PropertyActionPanel property={property} section="overlay" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-20">
@@ -95,7 +77,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
                               </div>
                           </div>
                           <div className="text-3xl font-bold text-amber-500">
-                              {formatPrice(property.price)}
+                              {formatIndianPrice(property.price)}
                           </div>
                       </div>
 
@@ -175,21 +157,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
                           </div>
                       </div>
                       
-                      <div className="space-y-4">
-                          <Button className="w-full">Schedule a Tour</Button>
-                          <Button variant="outline" className="w-full">Message Agent</Button>
-                      </div>
-
-                      <div className="mt-6 pt-6 border-t border-gray-200">
-                          <h4 className="font-semibold text-blue-950 mb-3">Ask a Question</h4>
-                          <form className="space-y-3">
-                              <input type="text" placeholder="Name" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-black focus:outline-none focus:border-blue-950 focus:ring-1 focus:ring-blue-950" />
-                              <input type="email" placeholder="Email" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-black focus:outline-none focus:border-blue-950 focus:ring-1 focus:ring-blue-950" />
-                              <input type="tel" placeholder="Phone" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-black focus:outline-none focus:border-blue-950 focus:ring-1 focus:ring-blue-950" />
-                              <textarea placeholder="I'm interested in this property..." rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-black focus:outline-none focus:border-blue-950 focus:ring-1 focus:ring-blue-950"></textarea>
-                              <Button variant="secondary" className="w-full">Send Request</Button>
-                          </form>
-                      </div>
+                      <PropertyActionPanel property={property} section="sidebar" />
                   </div>
               </div>
           </div>

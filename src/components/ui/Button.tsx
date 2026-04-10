@@ -1,8 +1,8 @@
 import { ButtonHTMLAttributes, forwardRef } from 'react';
-import { cn } from '@/lib/utils'; // I need to create this utility or just inline it for now. I'll create it.
+import { cn } from '@/lib/utils';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'white';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'white' | 'accent';
   size?: 'sm' | 'md' | 'lg';
 }
 
@@ -13,6 +13,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     
     const variants = {
       primary: "bg-blue-950 hover:bg-blue-900 text-white shadow-md",
+      accent: "bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-md",
       secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200",
       outline: "border-2 border-blue-950 text-blue-950 hover:bg-blue-950 hover:text-white",
       ghost: "hover:bg-gray-100 hover:text-blue-950",
@@ -25,14 +26,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       lg: "h-12 px-8 text-lg"
     };
     
-    // Simple class merger since I don't have clsx/tailwind-merge installed yet, I'll just template string it carefully or install them.
-    // For now I will assume simple usage.
-    const combinedClassName = `${baseStyles} ${variants[variant]} ${sizes[size]} ${className || ''}`;
-
     return (
       <button
         ref={ref}
-        className={combinedClassName}
+        className={cn(baseStyles, variants[variant], sizes[size], className || '')}
         {...props}
       />
     );

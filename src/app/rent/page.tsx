@@ -4,44 +4,29 @@ import { useState, useMemo } from 'react';
 import { FilterSidebar } from "@/components/search/FilterSidebar";
 import { PropertyCard } from "@/components/property/PropertyCard";
 import { PROPERTIES } from "@/lib/data";
-import { Property } from "@/lib/types";
+import { Property, PropertyFilters } from "@/lib/types";
+import { applyPropertyFilters } from "@/lib/propertyFilters";
 import { Key, Clock, Shield } from 'lucide-react';
 
 export default function RentPage() {
-  const [filters, setFilters] = useState({
-    propertyTypes: [] as string[],
+  const [filters, setFilters] = useState<PropertyFilters>({
+    propertyTypes: [],
     priceMin: '',
     priceMax: '',
-    bedrooms: null as number | null,
-    amenities: [] as string[],
+    bedrooms: null,
+    amenities: [],
   });
 
   // Filter only properties for rent
-  const filteredProperties = useMemo(() => {
-    return PROPERTIES.filter((property: Property) => {
-      if (property.status !== 'for-rent') return false;
+  const rentalProperties = useMemo(
+    () => PROPERTIES.filter((property: Property) => property.status === 'for-rent'),
+    []
+  );
 
-      if (filters.propertyTypes.length > 0) {
-        if (!filters.propertyTypes.includes(property.category)) return false;
-      }
-
-      if (filters.priceMin && property.price < parseInt(filters.priceMin)) return false;
-      if (filters.priceMax && property.price > parseInt(filters.priceMax)) return false;
-
-      if (filters.bedrooms && property.specs.bedrooms) {
-        if (property.specs.bedrooms < filters.bedrooms) return false;
-      }
-
-      if (filters.amenities.length > 0) {
-        const hasAllAmenities = filters.amenities.every(amenity => 
-          property.features.some(feature => feature.toLowerCase().includes(amenity.toLowerCase()))
-        );
-        if (!hasAllAmenities) return false;
-      }
-
-      return true;
-    });
-  }, [filters]);
+  const filteredProperties = useMemo(
+    () => applyPropertyFilters(rentalProperties, filters),
+    [filters, rentalProperties]
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 py-24">

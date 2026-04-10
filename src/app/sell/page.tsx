@@ -73,8 +73,8 @@ export default function SellPropertyPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-serif font-bold text-blue-950 mb-4">List Your Property</h1>
-          <p className="text-xl text-gray-600">
+          <h1 className="text-5xl font-serif font-bold text-slate-950 mb-4">List Your Property</h1>
+          <p className="text-xl text-slate-600">
             Fill in the details below to list your property on Webb Heads
           </p>
         </div>
@@ -82,7 +82,7 @@ export default function SellPropertyPage() {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Image Upload Section */}
           <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-gray-200">
-            <h2 className="text-2xl font-bold text-blue-950 mb-6 flex items-center">
+            <h2 className="text-2xl font-bold text-slate-950 mb-6 flex items-center">
               <Upload className="mr-3 text-amber-500" size={28} />
               Property Images
             </h2>
@@ -91,7 +91,7 @@ export default function SellPropertyPage() {
               <label className="block w-full">
                 <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-amber-500 transition-colors cursor-pointer bg-gray-50 hover:bg-amber-50">
                   <Upload className="mx-auto mb-4 text-gray-400" size={48} />
-                  <p className="text-gray-600 mb-2">Click to upload property images</p>
+                  <p className="text-slate-600 mb-2">Click to upload property images</p>
                   <p className="text-sm text-gray-400">PNG, JPG, JPEG up to 10MB each</p>
                 </div>
                 <input
@@ -130,7 +130,7 @@ export default function SellPropertyPage() {
 
           {/* Basic Information */}
           <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-gray-200">
-            <h2 className="text-2xl font-bold text-blue-950 mb-6 flex items-center">
+            <h2 className="text-2xl font-bold text-slate-950 mb-6 flex items-center">
               <Home className="mr-3 text-amber-500" size={28} />
               Basic Information
             </h2>
@@ -231,7 +231,7 @@ export default function SellPropertyPage() {
 
           {/* Location */}
           <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-gray-200">
-            <h2 className="text-2xl font-bold text-blue-950 mb-6 flex items-center">
+            <h2 className="text-2xl font-bold text-slate-950 mb-6 flex items-center">
               <MapPin className="mr-3 text-amber-500" size={28} />
               Location
             </h2>
@@ -297,7 +297,7 @@ export default function SellPropertyPage() {
 
           {/* Property Details */}
           <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-gray-200">
-            <h2 className="text-2xl font-bold text-blue-950 mb-6 flex items-center">
+            <h2 className="text-2xl font-bold text-slate-950 mb-6 flex items-center">
               <Ruler className="mr-3 text-amber-500" size={28} />
               Property Details
             </h2>
@@ -367,7 +367,7 @@ export default function SellPropertyPage() {
 
           {/* Features & Amenities */}
           <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-gray-200">
-            <h2 className="text-2xl font-bold text-blue-950 mb-6 flex items-center">
+            <h2 className="text-2xl font-bold text-slate-950 mb-6 flex items-center">
               <Check className="mr-3 text-amber-500" size={28} />
               Features & Amenities
             </h2>
@@ -393,8 +393,8 @@ export default function SellPropertyPage() {
                     key={index}
                     className="bg-blue-50 border-2 border-blue-200 px-4 py-2 rounded-lg flex items-center gap-2"
                   >
-                    <Check size={16} className="text-blue-950" />
-                    <span className="text-blue-950">{feature}</span>
+                    <Check size={16} className="text-slate-950" />
+                    <span className="text-slate-950">{feature}</span>
                     <button
                       type="button"
                       onClick={() => removeFeature(index)}

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, TrendingUp, Home, Globe, Users, Award, Clock, Headphones, BarChart3 } from "lucide-react";
+import { ArrowRight, ShieldCheck, TrendingUp, Home, Globe, Award, Headphones } from "lucide-react";
 import { PROPERTIES } from "@/lib/data";
 import { PropertyCard } from "@/components/property/PropertyCard";
 import { Button } from "@/components/ui/Button";
@@ -263,7 +263,7 @@ export default function HomePage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                <Link href="/search">
-                 <Button size="lg" className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-blue-950 font-bold px-8">Start Searching</Button>
+                 <Button variant="accent" size="lg" className="w-full sm:w-auto font-bold px-8">Start Searching</Button>
                </Link>
                <Link href="/agents">
                  <Button size="lg" className="w-full sm:w-auto bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-950 font-bold px-8">Contact an Agent</Button>

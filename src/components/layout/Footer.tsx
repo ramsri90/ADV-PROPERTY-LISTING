@@ -13,7 +13,7 @@ export function Footer() {
               Webb Heads
             </h3>
             <p className="text-sm leading-relaxed">
-              India's premier destination for luxury real estate listings, connecting buyers, sellers, and agents with the finest properties.
+              India&apos;s premier destination for luxury real estate listings, connecting buyers, sellers, and agents with the finest properties.
             </p>
             <div className="flex space-x-4 pt-2">
               <a href="#" className="hover:text-blue-950 transition-colors"><Facebook size={20} /></a>
@@ -28,10 +28,9 @@ export function Footer() {
             <h4 className="text-blue-950 font-semibold mb-6">Explore</h4>
             <ul className="space-y-3 text-sm">
               <li><Link href="/search" className="hover:text-blue-950 transition-colors">Find a Home</Link></li>
-              <li><Link href="/search?status=rent" className="hover:text-blue-950 transition-colors">Rent a Home</Link></li>
+              <li><Link href="/search?status=for-rent" className="hover:text-blue-950 transition-colors">Rent a Home</Link></li>
               <li><Link href="/search?type=commercial" className="hover:text-blue-950 transition-colors">Commercial Real Estate</Link></li>
               <li><Link href="/search" className="hover:text-blue-950 transition-colors">New Construction</Link></li>
-              <li><Link href="/search" className="hover:text-blue-950 transition-colors">Luxury Living Blog</Link></li>
             </ul>
           </div>
 

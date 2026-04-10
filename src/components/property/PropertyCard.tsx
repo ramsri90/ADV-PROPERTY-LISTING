@@ -1,16 +1,50 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
-import { Bed, Bath, Ruler, MapPin } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Bed, Bath, Heart, Ruler, MapPin, MessageCircle } from 'lucide-react';
+import { useToast } from '@/components/ui/ToastProvider';
+import { FAVORITES_EVENT, getStoredFavorites, setStoredFavorites } from '@/lib/favorites';
 import { Property } from '@/lib/types';
+import { buildPropertyInquiryMessage, buildWhatsAppHref, formatIndianPrice } from '@/lib/whatsapp';
 
 interface PropertyCardProps {
   property: Property;
 }
 
 export function PropertyCard({ property }: PropertyCardProps) {
-  const formatPrice = (price: number) => {
-    const crores = price / 10000000;
-    return `₹${crores.toFixed(2)} Cr`;
+  const { showToast } = useToast();
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const whatsappHref = buildWhatsAppHref(buildPropertyInquiryMessage(property));
+  const isSaved = favoriteIds.includes(property.id);
+
+  useEffect(() => {
+    const syncFavorites = () => {
+      setFavoriteIds(getStoredFavorites());
+    };
+
+    syncFavorites();
+    window.addEventListener('storage', syncFavorites);
+    window.addEventListener(FAVORITES_EVENT, syncFavorites);
+
+    return () => {
+      window.removeEventListener('storage', syncFavorites);
+      window.removeEventListener(FAVORITES_EVENT, syncFavorites);
+    };
+  }, []);
+
+  const toggleFavorite = () => {
+    const nextFavorites = isSaved
+      ? favoriteIds.filter((favoriteId) => favoriteId !== property.id)
+      : Array.from(new Set([...favoriteIds, property.id]));
+
+    setStoredFavorites(nextFavorites);
+    setFavoriteIds(nextFavorites);
+    showToast(
+      isSaved ? 'Property removed from favorites.' : 'Property saved to favorites.',
+      isSaved ? 'info' : 'success'
+    );
   };
 
   return (
@@ -29,6 +63,19 @@ export function PropertyCard({ property }: PropertyCardProps) {
         <div className="absolute top-4 right-4 bg-blue-950 text-white px-3 py-1 rounded-full text-xs font-bold uppercase">
              {property.status.replace('-', ' ')}
         </div>
+        <button
+          type="button"
+          onClick={toggleFavorite}
+          title={isSaved ? 'Remove from favorites' : 'Save to favorites'}
+          aria-label={isSaved ? 'Remove from favorites' : 'Save to favorites'}
+          className={`absolute bottom-4 right-4 inline-flex h-11 w-11 items-center justify-center rounded-full border shadow-lg transition-colors ${
+            isSaved
+              ? 'border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100'
+              : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-blue-950'
+          }`}
+        >
+          <Heart size={18} strokeWidth={2.2} fill={isSaved ? 'currentColor' : 'none'} />
+        </button>
       </div>
       
       <div className="p-6">
@@ -41,7 +88,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
                  </div>
             </div>
             <p className="text-lg font-bold text-blue-950 whitespace-nowrap">
-                {formatPrice(property.price)}
+                {formatIndianPrice(property.price)}
                 {property.status === 'for-rent' && <span className="text-sm text-gray-500 font-normal">/mo</span>}
             </p>
         </div>
@@ -61,10 +108,21 @@ export function PropertyCard({ property }: PropertyCardProps) {
              </div>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
              <Link href={`/property/${property.id}`} className="block w-full text-center py-3 bg-blue-950 hover:bg-amber-500 text-white hover:text-blue-950 rounded-lg font-bold transition-all duration-300">
                 View Details
              </Link>
+             <a
+               href={whatsappHref}
+               target="_blank"
+               rel="noreferrer"
+               title="Chat on WhatsApp for details"
+               aria-label="Chat on WhatsApp for details"
+               className="flex w-full items-center justify-center rounded-lg border-2 border-green-600 py-3 font-bold text-green-700 transition-all duration-300 hover:bg-green-600 hover:text-white"
+             >
+               <MessageCircle size={18} className="mr-2" />
+               WhatsApp
+             </a>
         </div>
       </div>
     </div>
