@@ -27,11 +27,11 @@ function getSession(from) {
 // ─── TRANSLATIONS ─────────────────────────────────────────────────────────────
 const T = {
   en: {
-    welcome: `👋 Welcome to *Webb Heads* – India's Premium Property Platform!\n\nReply *hi* or *menu* anytime to restart.\n\n🌐 Select your language:\n1️⃣ English\n2️⃣ తెలుగు (Telugu)\n3️⃣ हिंदी (Hindi)`,
-    mainMenu: `🏠 *Webb Heads Main Menu*\n\n1️⃣ Buy Property\n2️⃣ Rent Property\n3️⃣ Commercial Property\n4️⃣ List / Sell Property\n5️⃣ Talk to an Agent`,
+    welcome: `👋 Welcome to *Webb Heads*\nIndia's Premium Property Platform!\n\nSelect your language:`,
+    mainMenu: `🏠 *Webb Heads Main Menu*\n\nHow can we help you today?`,
     buyTitle: `🏠 *Properties for Sale:*\n`,
     rentTitle: `🏘️ *Properties for Rent:*\n`,
-    interestedPrompt: `Are you interested to:\n1️⃣ Buy\n2️⃣ Rent`,
+    interestedPrompt: `Are you looking to Buy or Rent?`,
     detailsPrompt: `📋 Please share your details.\n\nEnter your *Full Name*:`,
     askPhone: `📱 Enter your *Phone Number*:`,
     askEmail: `📧 Enter your *Email Address*:`,
@@ -41,14 +41,14 @@ const T = {
     invalid: `❌ Invalid option. Reply *menu* for main menu.`,
     prop: (p) => `🏷️ *${p.name}*\n📍 ${p.location}\n💰 ${p.price}${p.beds ? `\n🛏️ ${p.beds} Beds  🚿 ${p.baths} Baths` : ''}\n📐 ${p.area}\n🔗 ${p.url}`,
     agentMenu: `👨‍💼 *Talk to an Agent*\n\nEnter your *Full Name*:`,
-    langPrompt: `🌐 Select language:\n1️⃣ English\n2️⃣ తెలుగు\n3️⃣ हिंदी`,
+    langPrompt: `Select your language:`,
   },
   te: {
-    welcome: `👋 *Webb Heads*కి స్వాగతం!\n\nఎప్పుడైనా *hi* లేదా *menu* పంపండి.\n\n🌐 భాష ఎంచుకోండి:\n1️⃣ English\n2️⃣ తెలుగు\n3️⃣ हिंदी`,
-    mainMenu: `🏠 *Webb Heads మెనూ*\n\n1️⃣ ప్రాపర్టీ కొనండి\n2️⃣ అద్దెకు తీసుకోండి\n3️⃣ కమర్షియల్\n4️⃣ లిస్ట్ / అమ్మండి\n5️⃣ ఏజెంట్‌తో మాట్లాడండి`,
+    welcome: `👋 *Webb Heads*కి స్వాగతం!\nభాష ఎంచుకోండి:`,
+    mainMenu: `🏠 *Webb Heads మెనూ*\n\nమీకు ఏమి కావాలి?`,
     buyTitle: `🏠 *అమ్మకానికి ఉన్న ప్రాపర్టీలు:*\n`,
     rentTitle: `🏘️ *అద్దెకు ఉన్న ప్రాపర్టీలు:*\n`,
-    interestedPrompt: `మీకు ఏది కావాలి:\n1️⃣ కొనాలి\n2️⃣ అద్దెకు తీసుకోవాలి`,
+    interestedPrompt: `మీకు ఏది కావాలి?`,
     detailsPrompt: `📋 మీ వివరాలు నమోదు చేయండి.\n\n*పూర్తి పేరు* నమోదు చేయండి:`,
     askPhone: `📱 *ఫోన్ నంబర్* నమోదు చేయండి:`,
     askEmail: `📧 *ఇమెయిల్* నమోదు చేయండి:`,
@@ -58,14 +58,14 @@ const T = {
     invalid: `❌ చెల్లని ఆప్షన్. *menu* పంపండి.`,
     prop: (p) => `🏷️ *${p.name}*\n📍 ${p.location}\n💰 ${p.price}${p.beds ? `\n🛏️ ${p.beds} పడకలు  🚿 ${p.baths} బాత్‌రూమ్‌లు` : ''}\n📐 ${p.area}\n🔗 ${p.url}`,
     agentMenu: `👨‍💼 *ఏజెంట్‌తో మాట్లాడండి*\n\n*పూర్తి పేరు* నమోదు చేయండి:`,
-    langPrompt: `🌐 భాష ఎంచుకోండి:\n1️⃣ English\n2️⃣ తెలుగు\n3️⃣ हिंदी`,
+    langPrompt: `భాష ఎంచుకోండి:`,
   },
   hi: {
-    welcome: `👋 *Webb Heads* में आपका स्वागत है!\n\nकभी भी *hi* या *menu* भेजें।\n\n🌐 भाषा चुनें:\n1️⃣ English\n2️⃣ తెలుగు\n3️⃣ हिंदी`,
-    mainMenu: `🏠 *Webb Heads मेनू*\n\n1️⃣ प्रॉपर्टी खरीदें\n2️⃣ किराए पर लें\n3️⃣ कमर्शियल\n4️⃣ लिस्ट / बेचें\n5️⃣ एजेंट से बात करें`,
+    welcome: `👋 *Webb Heads* में आपका स्वागत है!\nభాషను ఎంచుకోండి:`,
+    mainMenu: `🏠 *Webb Heads मेनू*\n\nआप क्या ढूंढ रहे हैं?`,
     buyTitle: `🏠 *बिक्री के लिए प्रॉपर्टी:*\n`,
     rentTitle: `🏘️ *किराए की प्रॉपर्टी:*\n`,
-    interestedPrompt: `आप क्या चाहते हैं:\n1️⃣ खरीदना\n2️⃣ किराए पर लेना`,
+    interestedPrompt: `आप क्या चाहते हैं?`,
     detailsPrompt: `📋 अपनी जानकारी दर्ज करें।\n\n*पूरा नाम* दर्ज करें:`,
     askPhone: `📱 *फोन नंबर* दर्ज करें:`,
     askEmail: `📧 *ईमेल* दर्ज करें:`,
@@ -75,13 +75,13 @@ const T = {
     invalid: `❌ अमान्य विकल्प। *menu* भेजें।`,
     prop: (p) => `🏷️ *${p.name}*\n📍 ${p.location}\n💰 ${p.price}${p.beds ? `\n🛏️ ${p.beds} बेड  🚿 ${p.baths} बाथ` : ''}\n📐 ${p.area}\n🔗 ${p.url}`,
     agentMenu: `👨‍💼 *एजेंट से बात करें*\n\n*पूरा नाम* दर्ज करें:`,
-    langPrompt: `🌐 भाषा चुनें:\n1️⃣ English\n2️⃣ తెలుగు\n3️⃣ हिंदी`,
+    langPrompt: `भाषा चुनें:`,
   }
 };
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function buildCatalog(properties, t) {
-  return properties.map((p, i) => `${i + 1}️⃣ ${t.prop(p)}`).join('\n\n');
+  return properties.map((p, i) => `${i + 1}. ${t.prop(p)}`).join('\n\n');
 }
 
 function detectPropertyInquiry(text) {
@@ -102,73 +102,105 @@ async function saveToSheets(data) {
   } catch (e) { console.error('Sheets error:', e); }
 }
 
+// ─── SEND HELPERS ─────────────────────────────────────────────────────────────
 async function sendPayload(to, payload) {
   const WA_TOKEN = process.env.WA_TOKEN;
   const PHONE_ID = process.env.PHONE_ID;
-  await fetch(`https://graph.facebook.com/v18.0/${PHONE_ID}/messages`, {
+
+  const res = await fetch(`https://graph.facebook.com/v18.0/${PHONE_ID}/messages`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${WA_TOKEN}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messaging_product: 'whatsapp', to, ...payload })
+    headers: {
+      Authorization: `Bearer ${WA_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to,
+      ...payload
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    console.error('Meta API error:', JSON.stringify(err));
+  }
+}
+
+// FIX 1: type: 'text' explicitly set
+async function sendText(to, body) {
+  return await sendPayload(to, {
+    type: 'text',
+    text: { body, preview_url: false }
   });
 }
 
-async function sendText(to, body) {
-  return await sendPayload(to, { text: { body } });
-}
-
-async function sendInteractiveButtons(to, body, buttons) {
+// FIX 2: type: 'interactive' explicitly set
+// FIX 3: Button title max 20 chars (WhatsApp limit)
+async function sendButtons(to, bodyText, buttons) {
   return await sendPayload(to, {
-    recipient_type: 'individual',
+    type: 'interactive',
     interactive: {
       type: 'button',
-      body: { text: body },
+      body: { text: bodyText },
       action: {
-        buttons: buttons.map(({ id, title }) => ({ type: 'reply', reply: { id, title } }))
+        buttons: buttons.map(({ id, title }) => ({
+          type: 'reply',
+          reply: {
+            id: id.substring(0, 256),
+            title: title.substring(0, 20)
+          }
+        }))
       }
     }
   });
 }
 
-async function sendInteractiveList(to, body, buttonText, sections) {
+// FIX 4: type: 'interactive' explicitly set
+// FIX 5: Row title max 24 chars, description max 72 chars (WhatsApp limits)
+async function sendList(to, bodyText, buttonText, sections) {
   return await sendPayload(to, {
-    recipient_type: 'individual',
+    type: 'interactive',
     interactive: {
       type: 'list',
-      body: { text: body },
+      body: { text: bodyText },
       action: {
-        button: buttonText,
-        sections
+        button: buttonText.substring(0, 20),
+        sections: sections.map(section => ({
+          title: section.title.substring(0, 24),
+          rows: section.rows.map(row => ({
+            id: row.id.substring(0, 256),
+            title: row.title.substring(0, 24),
+            description: (row.description || '').substring(0, 72)
+          }))
+        }))
       }
     }
   });
-}
-
-function normalizeReply(text) {
-  return text?.trim().toLowerCase();
 }
 
 function setLang(text) {
-  const normalized = normalizeReply(text);
-  if (normalized === '1' || normalized === 'lang_en' || normalized === 'english') return 'en';
-  if (normalized === '2' || normalized === 'lang_te' || normalized === 'తెలుగు') return 'te';
-  if (normalized === '3' || normalized === 'lang_hi' || normalized === 'हिंदी') return 'hi';
+  const n = text?.trim().toLowerCase();
+  if (n === '1' || n === 'lang_en' || n === 'english') return 'en';
+  if (n === '2' || n === 'lang_te' || n === 'telugu') return 'te';
+  if (n === '3' || n === 'lang_hi' || n === 'hindi') return 'hi';
   return null;
 }
 
 function setIntent(text) {
-  const normalized = normalizeReply(text);
-  if (normalized === '1' || normalized === 'intent_buy' || normalized === 'buy') return 'Buy';
-  if (normalized === '2' || normalized === 'intent_rent' || normalized === 'rent') return 'Rent';
+  const n = text?.trim().toLowerCase();
+  if (n === '1' || n === 'intent_buy' || n === 'buy') return 'Buy';
+  if (n === '2' || n === 'intent_rent' || n === 'rent') return 'Rent';
   return null;
 }
 
 function setMenuOption(text) {
-  const normalized = normalizeReply(text);
-  if (normalized === '1' || normalized === 'main_1' || normalized === 'buy property') return 'main_1';
-  if (normalized === '2' || normalized === 'main_2' || normalized === 'rent property') return 'main_2';
-  if (normalized === '3' || normalized === 'main_3' || normalized === 'commercial property') return 'main_3';
-  if (normalized === '4' || normalized === 'main_4' || normalized === 'list / sell property' || normalized === 'list sell property') return 'main_4';
-  if (normalized === '5' || normalized === 'main_5' || normalized === 'talk to an agent') return 'main_5';
+  const n = text?.trim().toLowerCase();
+  if (n === '1' || n === 'main_1' || n === 'buy property') return 'main_1';
+  if (n === '2' || n === 'main_2' || n === 'rent property') return 'main_2';
+  if (n === '3' || n === 'main_3' || n === 'commercial') return 'main_3';
+  if (n === '4' || n === 'main_4' || n === 'list / sell') return 'main_4';
+  if (n === '5' || n === 'main_5' || n === 'talk to agent') return 'main_5';
   return null;
 }
 
@@ -181,35 +213,34 @@ async function handleMessage(from, text) {
   // Reset on hi/menu
   if (['hi', 'hello', 'hey', 'menu', 'start'].includes(lower)) {
     sessions[from] = { step: 'lang', lang: 'en', data: {} };
-    return await sendInteractiveButtons(from, T.en.welcome, [
+    return await sendButtons(from, T.en.welcome, [
       { id: 'lang_en', title: 'English' },
-      { id: 'lang_te', title: 'తెలుగు' },
-      { id: 'lang_hi', title: 'हिंदी' }
+      { id: 'lang_te', title: 'Telugu' },
+      { id: 'lang_hi', title: 'Hindi' }
     ]);
   }
 
-  // ── FLOW 1: Click-to-chat property inquiry ──────────────────────────────────
+  // ── FLOW 1: Click-to-chat property inquiry ────────────────────────────────
   if (session.step === 'start') {
     const prop = detectPropertyInquiry(text);
     if (prop) {
       session.data.property = prop;
       session.step = 'inquiry_lang';
-      return await sendInteractiveButtons(from, `${T.en.prop(prop)}\n\n${T.en.langPrompt}`, [
+      return await sendButtons(from, `${T.en.prop(prop)}\n\n${T.en.langPrompt}`, [
         { id: 'lang_en', title: 'English' },
-        { id: 'lang_te', title: 'తెలుగు' },
-        { id: 'lang_hi', title: 'हिंदी' }
+        { id: 'lang_te', title: 'Telugu' },
+        { id: 'lang_hi', title: 'Hindi' }
       ]);
     }
-    // Unknown message — show welcome
     sessions[from] = { step: 'lang', lang: 'en', data: {} };
-    return await sendInteractiveButtons(from, T.en.welcome, [
+    return await sendButtons(from, T.en.welcome, [
       { id: 'lang_en', title: 'English' },
-      { id: 'lang_te', title: 'తెలుగు' },
-      { id: 'lang_hi', title: 'हिंदी' }
+      { id: 'lang_te', title: 'Telugu' },
+      { id: 'lang_hi', title: 'Hindi' }
     ]);
   }
 
-  // ── LANGUAGE SELECTION ──────────────────────────────────────────────────────
+  // ── LANGUAGE SELECTION ────────────────────────────────────────────────────
   if (session.step === 'lang' || session.step === 'inquiry_lang') {
     const lang = setLang(text);
     if (!lang) return await sendText(from, `Please tap a button or reply 1, 2 or 3.`);
@@ -217,25 +248,32 @@ async function handleMessage(from, text) {
     const tNew = T[lang];
     if (session.step === 'inquiry_lang') {
       session.step = 'inquiry_intent';
-      return await sendInteractiveButtons(from, tNew.interestedPrompt, [
+      return await sendButtons(from, tNew.interestedPrompt, [
         { id: 'intent_buy', title: 'Buy' },
         { id: 'intent_rent', title: 'Rent' }
       ]);
     }
     session.step = 'main_menu';
-    return await sendInteractiveList(from, tNew.mainMenu, 'Open menu', [{
-      title: 'Options',
-      rows: [
-        { id: 'main_1', title: 'Buy Property', description: 'Browse homes for sale' },
-        { id: 'main_2', title: 'Rent Property', description: 'See rental options' },
-        { id: 'main_3', title: 'Commercial Property', description: 'Commercial listings' },
-        { id: 'main_4', title: 'List / Sell Property', description: 'List your property' },
-        { id: 'main_5', title: 'Talk to an Agent', description: 'Contact our team' }
-      ]
-    }] );
+    return await sendList(from, tNew.mainMenu, 'View Options', [
+      {
+        title: 'Properties',
+        rows: [
+          { id: 'main_1', title: 'Buy Property', description: 'Browse homes for sale' },
+          { id: 'main_2', title: 'Rent Property', description: 'See rental options' },
+          { id: 'main_3', title: 'Commercial', description: 'Commercial listings' },
+        ]
+      },
+      {
+        title: 'Services',
+        rows: [
+          { id: 'main_4', title: 'List / Sell', description: 'List your property' },
+          { id: 'main_5', title: 'Talk to Agent', description: 'Contact our team' }
+        ]
+      }
+    ]);
   }
 
-  // ── INQUIRY INTENT ──────────────────────────────────────────────────────────
+  // ── INQUIRY INTENT ────────────────────────────────────────────────────────
   if (session.step === 'inquiry_intent') {
     const intent = setIntent(text);
     if (!intent) return await sendText(from, t.invalid);
@@ -244,7 +282,7 @@ async function handleMessage(from, text) {
     return await sendText(from, t.detailsPrompt);
   }
 
-  // ── MAIN MENU ───────────────────────────────────────────────────────────────
+  // ── MAIN MENU ─────────────────────────────────────────────────────────────
   if (session.step === 'main_menu') {
     const menuOption = setMenuOption(text);
     if (menuOption === 'main_1') {
@@ -267,7 +305,7 @@ async function handleMessage(from, text) {
     return await sendText(from, t.invalid);
   }
 
-  // ── LEAD COLLECTION ─────────────────────────────────────────────────────────
+  // ── LEAD COLLECTION ───────────────────────────────────────────────────────
   if (session.step === 'collect_name') {
     session.data.name = text.trim();
     session.step = 'collect_phone';
@@ -296,7 +334,11 @@ async function handleMessage(from, text) {
 
   // Default fallback
   sessions[from] = { step: 'lang', lang: 'en', data: {} };
-  return await sendText(from, T.en.welcome);
+  return await sendButtons(from, T.en.welcome, [
+    { id: 'lang_en', title: 'English' },
+    { id: 'lang_te', title: 'Telugu' },
+    { id: 'lang_hi', title: 'Hindi' }
+  ]);
 }
 
 // ─── WEBHOOK ──────────────────────────────────────────────────────────────────
@@ -318,15 +360,17 @@ export async function POST(req) {
     if (!message) return Response.json({ status: 'ok' });
 
     let userInput = null;
-    const interactive = message.interactive;
+
     if (message.type === 'text') {
       userInput = message.text.body;
-    }
-    if (interactive) {
-      userInput = interactive.button_reply?.id || interactive.list_reply?.id || interactive.button_reply?.title || interactive.list_reply?.title || message.text?.body || userInput;
-    }
-    if (!userInput && message.text?.body) {
-      userInput = message.text.body;
+    } else if (message.type === 'interactive') {
+      // FIX 6: Correctly extract interactive reply — ID first, then title
+      userInput =
+        message.interactive?.button_reply?.id ||
+        message.interactive?.list_reply?.id ||
+        message.interactive?.button_reply?.title ||
+        message.interactive?.list_reply?.title ||
+        null;
     }
 
     if (!userInput) return Response.json({ status: 'ok' });
