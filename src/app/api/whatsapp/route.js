@@ -1,213 +1,244 @@
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
 const VERIFY_TOKEN = 'webbheads_webhook_token';
+const AGENT_PHONE = '+91 22 4567 8900';
+const SITE = 'https://adv-property-listing-gamma.vercel.app';
+const SHEETS_WEBHOOK = process.env.SHEETS_WEBHOOK_URL;
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// ─── PROPERTY DATA ────────────────────────────────────────────────────────────
+const BUY_PROPERTIES = [
+  { id: 'p1', name: 'Luxury Sea-View Penthouse', location: 'Mumbai, Maharashtra', price: '₹12.50 Cr', beds: 5, baths: 6, area: '6,500 Sq Ft', url: `${SITE}/property/p1` },
+  { id: 'p2', name: 'Modern Villa in Whitefield', location: 'Bangalore, Karnataka', price: '₹4.20 Cr', beds: 4, baths: 4, area: '3,800 Sq Ft', url: `${SITE}/property/p2` },
+  { id: 'p5', name: 'Modern Tech Office Space', location: 'Hyderabad, Telangana', price: '₹18.00 Cr', beds: null, baths: null, area: '25,000 Sq Ft', url: `${SITE}/property/p5` },
+  { id: 'p6', name: 'Serene Waterfront Villa', location: 'North Goa, Goa', price: '₹5.50 Cr', beds: 4, baths: 4, area: '4,200 Sq Ft', url: `${SITE}/property/p6` },
+];
 
-async function sendMessage(PHONE_ID, WA_TOKEN, to, body) {
+const RENT_PROPERTIES = [
+  { id: 'p3', name: 'Prime Commercial Space in Connaught Place', location: 'New Delhi, Delhi', price: '₹8.50 Cr/mo', beds: null, baths: null, area: '2,200 Sq Ft', url: `${SITE}/property/p3` },
+  { id: 'p4', name: 'Elegant Heritage Apartment', location: 'Kolkata, West Bengal', price: '₹6.80 Cr/mo', beds: 3, baths: 3, area: '2,500 Sq Ft', url: `${SITE}/property/p4` },
+];
+
+// ─── IN-MEMORY SESSION STORE ──────────────────────────────────────────────────
+const sessions = {};
+function getSession(from) {
+  if (!sessions[from]) sessions[from] = { step: 'start', lang: 'en', data: {} };
+  return sessions[from];
+}
+
+// ─── TRANSLATIONS ─────────────────────────────────────────────────────────────
+const T = {
+  en: {
+    welcome: `👋 Welcome to *Webb Heads* – India's Premium Property Platform!\n\nReply *hi* or *menu* anytime to restart.\n\n🌐 Select your language:\n1️⃣ English\n2️⃣ తెలుగు (Telugu)\n3️⃣ हिंदी (Hindi)`,
+    mainMenu: `🏠 *Webb Heads Main Menu*\n\n1️⃣ Buy Property\n2️⃣ Rent Property\n3️⃣ Commercial Property\n4️⃣ List / Sell Property\n5️⃣ Talk to an Agent`,
+    buyTitle: `🏠 *Properties for Sale:*\n`,
+    rentTitle: `🏘️ *Properties for Rent:*\n`,
+    interestedPrompt: `Are you interested to:\n1️⃣ Buy\n2️⃣ Rent`,
+    detailsPrompt: `📋 Please share your details.\n\nEnter your *Full Name*:`,
+    askPhone: `📱 Enter your *Phone Number*:`,
+    askEmail: `📧 Enter your *Email Address*:`,
+    thankYou: `✅ Thank you! Our executive will contact you shortly.\n\nFor queries call: ${AGENT_PHONE}\n\nReply *menu* for main menu.`,
+    commercial: `🏢 *Commercial Properties*\n👉 ${SITE}/commercial\n\nReply *menu* to go back.`,
+    sell: `📋 *List / Sell Your Property*\n👉 ${SITE}/sell\n\nOur team will contact you within 24 hours!\nReply *menu* to go back.`,
+    invalid: `❌ Invalid option. Reply *menu* for main menu.`,
+    prop: (p) => `🏷️ *${p.name}*\n📍 ${p.location}\n💰 ${p.price}${p.beds ? `\n🛏️ ${p.beds} Beds  🚿 ${p.baths} Baths` : ''}\n📐 ${p.area}\n🔗 ${p.url}`,
+    agentMenu: `👨‍💼 *Talk to an Agent*\n\nEnter your *Full Name*:`,
+    langPrompt: `🌐 Select language:\n1️⃣ English\n2️⃣ తెలుగు\n3️⃣ हिंदी`,
+  },
+  te: {
+    welcome: `👋 *Webb Heads*కి స్వాగతం!\n\nఎప్పుడైనా *hi* లేదా *menu* పంపండి.\n\n🌐 భాష ఎంచుకోండి:\n1️⃣ English\n2️⃣ తెలుగు\n3️⃣ हिंदी`,
+    mainMenu: `🏠 *Webb Heads మెనూ*\n\n1️⃣ ప్రాపర్టీ కొనండి\n2️⃣ అద్దెకు తీసుకోండి\n3️⃣ కమర్షియల్\n4️⃣ లిస్ట్ / అమ్మండి\n5️⃣ ఏజెంట్‌తో మాట్లాడండి`,
+    buyTitle: `🏠 *అమ్మకానికి ఉన్న ప్రాపర్టీలు:*\n`,
+    rentTitle: `🏘️ *అద్దెకు ఉన్న ప్రాపర్టీలు:*\n`,
+    interestedPrompt: `మీకు ఏది కావాలి:\n1️⃣ కొనాలి\n2️⃣ అద్దెకు తీసుకోవాలి`,
+    detailsPrompt: `📋 మీ వివరాలు నమోదు చేయండి.\n\n*పూర్తి పేరు* నమోదు చేయండి:`,
+    askPhone: `📱 *ఫోన్ నంబర్* నమోదు చేయండి:`,
+    askEmail: `📧 *ఇమెయిల్* నమోదు చేయండి:`,
+    thankYou: `✅ ధన్యవాదాలు! మా ఎగ్జిక్యూటివ్ త్వరలో సంప్రదిస్తారు.\n\nసందేహాలకు: ${AGENT_PHONE}\n\nమెనూకు *menu* పంపండి.`,
+    commercial: `🏢 *కమర్షియల్ ప్రాపర్టీలు*\n👉 ${SITE}/commercial\n\nమెనూకు *menu* పంపండి.`,
+    sell: `📋 *ప్రాపర్టీ లిస్ట్ / అమ్మండి*\n👉 ${SITE}/sell\n\nమెనూకు *menu* పంపండి.`,
+    invalid: `❌ చెల్లని ఆప్షన్. *menu* పంపండి.`,
+    prop: (p) => `🏷️ *${p.name}*\n📍 ${p.location}\n💰 ${p.price}${p.beds ? `\n🛏️ ${p.beds} పడకలు  🚿 ${p.baths} బాత్‌రూమ్‌లు` : ''}\n📐 ${p.area}\n🔗 ${p.url}`,
+    agentMenu: `👨‍💼 *ఏజెంట్‌తో మాట్లాడండి*\n\n*పూర్తి పేరు* నమోదు చేయండి:`,
+    langPrompt: `🌐 భాష ఎంచుకోండి:\n1️⃣ English\n2️⃣ తెలుగు\n3️⃣ हिंदी`,
+  },
+  hi: {
+    welcome: `👋 *Webb Heads* में आपका स्वागत है!\n\nकभी भी *hi* या *menu* भेजें।\n\n🌐 भाषा चुनें:\n1️⃣ English\n2️⃣ తెలుగు\n3️⃣ हिंदी`,
+    mainMenu: `🏠 *Webb Heads मेनू*\n\n1️⃣ प्रॉपर्टी खरीदें\n2️⃣ किराए पर लें\n3️⃣ कमर्शियल\n4️⃣ लिस्ट / बेचें\n5️⃣ एजेंट से बात करें`,
+    buyTitle: `🏠 *बिक्री के लिए प्रॉपर्टी:*\n`,
+    rentTitle: `🏘️ *किराए की प्रॉपर्टी:*\n`,
+    interestedPrompt: `आप क्या चाहते हैं:\n1️⃣ खरीदना\n2️⃣ किराए पर लेना`,
+    detailsPrompt: `📋 अपनी जानकारी दर्ज करें।\n\n*पूरा नाम* दर्ज करें:`,
+    askPhone: `📱 *फोन नंबर* दर्ज करें:`,
+    askEmail: `📧 *ईमेल* दर्ज करें:`,
+    thankYou: `✅ धन्यवाद! हमारे एग्जीक्यूटिव जल्द संपर्क करेंगे।\n\nप्रश्नों के लिए: ${AGENT_PHONE}\n\nमेनू के लिए *menu* भेजें।`,
+    commercial: `🏢 *कमर्शियल प्रॉपर्टी*\n👉 ${SITE}/commercial\n\nमेनू के लिए *menu* भेजें।`,
+    sell: `📋 *प्रॉपर्टी लिस्ट / बेचें*\n👉 ${SITE}/sell\n\nमेनू के लिए *menu* भेजें।`,
+    invalid: `❌ अमान्य विकल्प। *menu* भेजें।`,
+    prop: (p) => `🏷️ *${p.name}*\n📍 ${p.location}\n💰 ${p.price}${p.beds ? `\n🛏️ ${p.beds} बेड  🚿 ${p.baths} बाथ` : ''}\n📐 ${p.area}\n🔗 ${p.url}`,
+    agentMenu: `👨‍💼 *एजेंट से बात करें*\n\n*पूरा नाम* दर्ज करें:`,
+    langPrompt: `🌐 भाषा चुनें:\n1️⃣ English\n2️⃣ తెలుగు\n3️⃣ हिंदी`,
+  }
+};
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function buildCatalog(properties, t) {
+  return properties.map((p, i) => `${i + 1}️⃣ ${t.prop(p)}`).join('\n\n');
+}
+
+function detectPropertyInquiry(text) {
+  const lower = text.toLowerCase();
+  if (!lower.includes('interested in')) return null;
+  const all = [...BUY_PROPERTIES, ...RENT_PROPERTIES];
+  return all.find(p => lower.includes(p.name.toLowerCase())) || null;
+}
+
+async function saveToSheets(data) {
+  if (!SHEETS_WEBHOOK) return;
+  try {
+    await fetch(SHEETS_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  } catch (e) { console.error('Sheets error:', e); }
+}
+
+async function send(to, body) {
+  const WA_TOKEN = process.env.WA_TOKEN;
+  const PHONE_ID = process.env.PHONE_ID;
   await fetch(`https://graph.facebook.com/v18.0/${PHONE_ID}/messages`, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${WA_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      messaging_product: 'whatsapp',
-      to,
-      ...body,
-    }),
+    headers: { Authorization: `Bearer ${WA_TOKEN}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messaging_product: 'whatsapp', to, text: { body } })
   });
 }
 
-// Sends a message with up to 3 tap-able buttons
-async function sendButtons(PHONE_ID, WA_TOKEN, to, headerText, bodyText, buttons) {
-  await sendMessage(PHONE_ID, WA_TOKEN, to, {
-    type: 'interactive',
-    interactive: {
-      type: 'button',
-      header: { type: 'text', text: headerText },
-      body: { text: bodyText },
-      action: {
-        buttons: buttons.map((b) => ({
-          type: 'reply',
-          reply: { id: b.id, title: b.title },
-        })),
-      },
-    },
-  });
+function setLang(text) {
+  if (text === '1') return 'en';
+  if (text === '2') return 'te';
+  if (text === '3') return 'hi';
+  return null;
 }
 
-// Sends a list menu (supports more than 3 options, up to 10)
-async function sendList(PHONE_ID, WA_TOKEN, to, headerText, bodyText, buttonLabel, sections) {
-  await sendMessage(PHONE_ID, WA_TOKEN, to, {
-    type: 'interactive',
-    interactive: {
-      type: 'list',
-      header: { type: 'text', text: headerText },
-      body: { text: bodyText },
-      action: {
-        button: buttonLabel,
-        sections,
-      },
-    },
-  });
+// ─── MAIN HANDLER ─────────────────────────────────────────────────────────────
+async function handleMessage(from, text) {
+  const session = getSession(from);
+  const t = T[session.lang] || T.en;
+  const lower = text.trim().toLowerCase();
+
+  // Reset on hi/menu
+  if (['hi', 'hello', 'hey', 'menu', 'start'].includes(lower)) {
+    sessions[from] = { step: 'lang', lang: 'en', data: {} };
+    return await send(from, T.en.welcome);
+  }
+
+  // ── FLOW 1: Click-to-chat property inquiry ──────────────────────────────────
+  if (session.step === 'start') {
+    const prop = detectPropertyInquiry(text);
+    if (prop) {
+      session.data.property = prop;
+      session.step = 'inquiry_lang';
+      return await send(from, `${T.en.prop(prop)}\n\n🌐 Select your language:\n1️⃣ English\n2️⃣ తెలుగు\n3️⃣ हिंदी`);
+    }
+    // Unknown message — show welcome
+    sessions[from] = { step: 'lang', lang: 'en', data: {} };
+    return await send(from, T.en.welcome);
+  }
+
+  // ── LANGUAGE SELECTION ──────────────────────────────────────────────────────
+  if (session.step === 'lang' || session.step === 'inquiry_lang') {
+    const lang = setLang(text);
+    if (!lang) return await send(from, `Please reply 1, 2 or 3.`);
+    session.lang = lang;
+    const tNew = T[lang];
+    if (session.step === 'inquiry_lang') {
+      session.step = 'inquiry_intent';
+      return await send(from, tNew.interestedPrompt);
+    }
+    session.step = 'main_menu';
+    return await send(from, tNew.mainMenu);
+  }
+
+  // ── INQUIRY INTENT ──────────────────────────────────────────────────────────
+  if (session.step === 'inquiry_intent') {
+    if (text === '1') session.data.intent = 'Buy';
+    else if (text === '2') session.data.intent = 'Rent';
+    else return await send(from, t.invalid);
+    session.step = 'collect_name';
+    return await send(from, t.detailsPrompt);
+  }
+
+  // ── MAIN MENU ───────────────────────────────────────────────────────────────
+  if (session.step === 'main_menu') {
+    if (text === '1') {
+      const catalog = buildCatalog(BUY_PROPERTIES, t);
+      session.step = 'start';
+      return await send(from, `${t.buyTitle}\n${catalog}\n\n👉 ${SITE}/buy\n\nReply *menu* for main menu.`);
+    }
+    if (text === '2') {
+      const catalog = buildCatalog(RENT_PROPERTIES, t);
+      session.step = 'start';
+      return await send(from, `${t.rentTitle}\n${catalog}\n\n👉 ${SITE}/rent\n\nReply *menu* for main menu.`);
+    }
+    if (text === '3') { session.step = 'start'; return await send(from, t.commercial); }
+    if (text === '4') { session.step = 'start'; return await send(from, t.sell); }
+    if (text === '5') {
+      session.data.intent = 'Agent';
+      session.step = 'collect_name';
+      return await send(from, t.agentMenu);
+    }
+    return await send(from, t.invalid);
+  }
+
+  // ── LEAD COLLECTION ─────────────────────────────────────────────────────────
+  if (session.step === 'collect_name') {
+    session.data.name = text.trim();
+    session.step = 'collect_phone';
+    return await send(from, t.askPhone);
+  }
+  if (session.step === 'collect_phone') {
+    session.data.phone = text.trim();
+    session.step = 'collect_email';
+    return await send(from, t.askEmail);
+  }
+  if (session.step === 'collect_email') {
+    session.data.email = text.trim();
+    await saveToSheets({
+      timestamp: new Date().toISOString(),
+      name: session.data.name,
+      phone: session.data.phone,
+      email: session.data.email,
+      intent: session.data.intent || 'Inquiry',
+      property: session.data.property?.name || 'General',
+      whatsapp: from,
+      language: session.lang
+    });
+    session.step = 'start';
+    return await send(from, t.thankYou);
+  }
+
+  // Default fallback
+  sessions[from] = { step: 'lang', lang: 'en', data: {} };
+  return await send(from, T.en.welcome);
 }
 
-// Plain text fallback
-async function sendText(PHONE_ID, WA_TOKEN, to, text) {
-  await sendMessage(PHONE_ID, WA_TOKEN, to, {
-    type: 'text',
-    text: { body: text },
-  });
-}
-
-// ─── Main Menu ───────────────────────────────────────────────────────────────
-
-async function sendMainMenu(PHONE_ID, WA_TOKEN, to) {
-  // WhatsApp buttons support max 3 — use a list for 5 options
-  await sendList(PHONE_ID, WA_TOKEN, to,
-    '🏡 Webb Heads',
-    'Welcome to *Webb Heads* – India\'s Premium Property Platform!\n\nHow can we help you today?',
-    'View Options',
-    [
-      {
-        title: 'Properties',
-        rows: [
-          { id: 'BUY',        title: '🏠 Buy Property',         description: 'Browse verified sale listings' },
-          { id: 'RENT',       title: '🏘️ Rent Property',        description: 'Explore rental listings' },
-          { id: 'COMMERCIAL', title: '🏢 Commercial Property',   description: 'Office, retail & more' },
-        ],
-      },
-      {
-        title: 'Other Services',
-        rows: [
-          { id: 'SELL',  title: '📋 List / Sell My Property', description: 'Post your property with us' },
-          { id: 'AGENT', title: '👨‍💼 Talk to an Agent',        description: 'Get personalised assistance' },
-        ],
-      },
-    ]
-  );
-}
-
-// ─── GET – Webhook Verification ──────────────────────────────────────────────
-
+// ─── WEBHOOK ──────────────────────────────────────────────────────────────────
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
-  const mode      = searchParams.get('hub.mode');
-  const token     = searchParams.get('hub.verify_token');
+  const mode = searchParams.get('hub.mode');
+  const token = searchParams.get('hub.verify_token');
   const challenge = searchParams.get('hub.challenge');
-
   if (mode === 'subscribe' && token === VERIFY_TOKEN) {
     return new Response(challenge, { status: 200 });
   }
   return new Response('Forbidden', { status: 403 });
 }
 
-// ─── POST – Incoming Messages ─────────────────────────────────────────────────
-
 export async function POST(req) {
   try {
-    const body    = await req.json();
-    const value   = body.entry?.[0]?.changes?.[0]?.value;
-    const message = value?.messages?.[0];
-
-    if (!message) return Response.json({ status: 'ok' });
-
-    const from     = message.from;
-    const WA_TOKEN = process.env.WA_TOKEN;
-    const PHONE_ID = process.env.PHONE_ID;
-
-    // ── Interactive reply (button / list tap) ──────────────────────────────
-    if (message.type === 'interactive') {
-      const buttonId =
-        message.interactive?.button_reply?.id ||   // button tap
-        message.interactive?.list_reply?.id;       // list selection
-
-      switch (buttonId) {
-        case 'BUY':
-          await sendButtons(PHONE_ID, WA_TOKEN, from,
-            '🏠 Buy a Property',
-            'Browse our verified sale listings across India:\n👉 https://adv-property-listing-gamma.vercel.app/buy\n\nWould you like to filter further?',
-            [
-              { id: 'MAIN_MENU', title: '🏠 Main Menu' },
-              { id: 'AGENT',     title: '👨‍💼 Talk to Agent' },
-            ]
-          );
-          break;
-
-        case 'RENT':
-          await sendButtons(PHONE_ID, WA_TOKEN, from,
-            '🏘️ Rent a Property',
-            'Browse rental listings across India:\n👉 https://adv-property-listing-gamma.vercel.app/rent',
-            [
-              { id: 'MAIN_MENU', title: '🏠 Main Menu' },
-              { id: 'AGENT',     title: '👨‍💼 Talk to Agent' },
-            ]
-          );
-          break;
-
-        case 'COMMERCIAL':
-          await sendButtons(PHONE_ID, WA_TOKEN, from,
-            '🏢 Commercial Properties',
-            'Explore office spaces, retail shops & more:\n👉 https://adv-property-listing-gamma.vercel.app/commercial',
-            [
-              { id: 'MAIN_MENU', title: '🏠 Main Menu' },
-              { id: 'AGENT',     title: '👨‍💼 Talk to Agent' },
-            ]
-          );
-          break;
-
-        case 'SELL':
-          await sendButtons(PHONE_ID, WA_TOKEN, from,
-            '📋 List Your Property',
-            'Post your property with Webb Heads:\n👉 https://adv-property-listing-gamma.vercel.app/sell\n\nOur team will contact you within 24 hours!',
-            [
-              { id: 'MAIN_MENU', title: '🏠 Main Menu' },
-              { id: 'AGENT',     title: '👨‍💼 Talk to Agent' },
-            ]
-          );
-          break;
-
-        case 'AGENT':
-          await sendButtons(PHONE_ID, WA_TOKEN, from,
-            '👨‍💼 Talk to an Agent',
-            'Our agents are ready to help!\n👉 https://adv-property-listing-gamma.vercel.app/agents\n\n📞 Call us: +91 22 4567 8900',
-            [
-              { id: 'MAIN_MENU', title: '🏠 Main Menu' },
-            ]
-          );
-          break;
-
-        case 'MAIN_MENU':
-          await sendMainMenu(PHONE_ID, WA_TOKEN, from);
-          break;
-
-        default:
-          await sendMainMenu(PHONE_ID, WA_TOKEN, from);
-      }
-
-      return Response.json({ status: 'ok' });
-    }
-
-    // ── Text message ───────────────────────────────────────────────────────
-    if (message.type === 'text') {
-      const text = message.text.body.toLowerCase().trim();
-
-      if (text.includes('hi') || text.includes('hello') || text.includes('hey') || text === 'menu') {
-        await sendMainMenu(PHONE_ID, WA_TOKEN, from);
-      } else {
-        // User typed something else – show menu with a gentle prompt
-        await sendText(PHONE_ID, WA_TOKEN, from,
-          'I\'m not sure I understood that 😊\nSay *hi* or *menu* to see your options.'
-        );
-      }
-
-      return Response.json({ status: 'ok' });
-    }
-
-    // ── Unsupported message type (image, audio, etc.) ──────────────────────
-    await sendText(PHONE_ID, WA_TOKEN, from,
-      'I can only handle text and button replies right now. Say *hi* to get started! 😊'
-    );
-
+    const body = await req.json();
+    const message = body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+    if (!message || message.type !== 'text') return Response.json({ status: 'ok' });
+    await handleMessage(message.from, message.text.body);
     return Response.json({ status: 'ok' });
   } catch (err) {
     console.error('Webhook error:', err);
