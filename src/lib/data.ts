@@ -5,7 +5,7 @@ const agent1: Agent = {
   name: 'Priya Sharma',
   role: 'Senior Luxury Consultant',
   image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200&h=200',
-  phone: '+91 83677 43555',
+  phone: '+1 (555) 657-4503',
   email: 'priya@webbheads.in',
   bio: 'With over 15 years of experience in India\'s luxury real estate market, Priya specializes in premium properties across Mumbai and Delhi.'
 };
@@ -15,7 +15,7 @@ const agent2: Agent = {
   name: 'Rajesh Kumar',
   role: 'Commercial Specialist',
   image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200&h=200',
-  phone: '+91 83677 43555',
+  phone: '+1 (555) 657-4503',
   email: 'rajesh@webbheads.in',
   bio: 'Rajesh brings expertise in commercial real estate, helping investors find high-yield opportunities across India\'s major cities.'
 };
