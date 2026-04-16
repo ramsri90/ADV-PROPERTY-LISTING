@@ -102,20 +102,49 @@ async function saveToSheets(data) {
   } catch (e) { console.error('Sheets error:', e); }
 }
 
-async function send(to, body) {
+async function sendPayload(to, payload) {
   const WA_TOKEN = process.env.WA_TOKEN;
   const PHONE_ID = process.env.PHONE_ID;
   await fetch(`https://graph.facebook.com/v18.0/${PHONE_ID}/messages`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${WA_TOKEN}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messaging_product: 'whatsapp', to, text: { body } })
+    body: JSON.stringify({ messaging_product: 'whatsapp', to, ...payload })
+  });
+}
+
+async function sendText(to, body) {
+  return await sendPayload(to, { text: { body } });
+}
+
+async function sendInteractiveButtons(to, body, buttons) {
+  return await sendPayload(to, {
+    interactive: {
+      type: 'button',
+      body: { text: body },
+      action: {
+        buttons: buttons.map(({ id, title }) => ({ type: 'reply', reply: { id, title } }))
+      }
+    }
+  });
+}
+
+async function sendInteractiveList(to, body, buttonText, sections) {
+  return await sendPayload(to, {
+    interactive: {
+      type: 'list',
+      body: { text: body },
+      action: {
+        button: buttonText,
+        sections
+      }
+    }
   });
 }
 
 function setLang(text) {
-  if (text === '1') return 'en';
-  if (text === '2') return 'te';
-  if (text === '3') return 'hi';
+  if (text === '1' || text === 'lang_en') return 'en';
+  if (text === '2' || text === 'lang_te') return 'te';
+  if (text === '3' || text === 'lang_hi') return 'hi';
   return null;
 }
 
@@ -128,7 +157,11 @@ async function handleMessage(from, text) {
   // Reset on hi/menu
   if (['hi', 'hello', 'hey', 'menu', 'start'].includes(lower)) {
     sessions[from] = { step: 'lang', lang: 'en', data: {} };
-    return await send(from, T.en.welcome);
+    return await sendInteractiveButtons(from, T.en.welcome, [
+      { id: 'lang_en', title: 'English' },
+      { id: 'lang_te', title: 'తెలుగు' },
+      { id: 'lang_hi', title: 'हिंदी' }
+    ]);
   }
 
   // ── FLOW 1: Click-to-chat property inquiry ──────────────────────────────────
@@ -137,68 +170,88 @@ async function handleMessage(from, text) {
     if (prop) {
       session.data.property = prop;
       session.step = 'inquiry_lang';
-      return await send(from, `${T.en.prop(prop)}\n\n🌐 Select your language:\n1️⃣ English\n2️⃣ తెలుగు\n3️⃣ हिंदी`);
+      return await sendInteractiveButtons(from, `${T.en.prop(prop)}\n\n${T.en.langPrompt}`, [
+        { id: 'lang_en', title: 'English' },
+        { id: 'lang_te', title: 'తెలుగు' },
+        { id: 'lang_hi', title: 'हिंदी' }
+      ]);
     }
     // Unknown message — show welcome
     sessions[from] = { step: 'lang', lang: 'en', data: {} };
-    return await send(from, T.en.welcome);
+    return await sendInteractiveButtons(from, T.en.welcome, [
+      { id: 'lang_en', title: 'English' },
+      { id: 'lang_te', title: 'తెలుగు' },
+      { id: 'lang_hi', title: 'हिंदी' }
+    ]);
   }
 
   // ── LANGUAGE SELECTION ──────────────────────────────────────────────────────
   if (session.step === 'lang' || session.step === 'inquiry_lang') {
     const lang = setLang(text);
-    if (!lang) return await send(from, `Please reply 1, 2 or 3.`);
+    if (!lang) return await sendText(from, `Please tap a button or reply 1, 2 or 3.`);
     session.lang = lang;
     const tNew = T[lang];
     if (session.step === 'inquiry_lang') {
       session.step = 'inquiry_intent';
-      return await send(from, tNew.interestedPrompt);
+      return await sendInteractiveButtons(from, tNew.interestedPrompt, [
+        { id: 'intent_buy', title: 'Buy' },
+        { id: 'intent_rent', title: 'Rent' }
+      ]);
     }
     session.step = 'main_menu';
-    return await send(from, tNew.mainMenu);
+    return await sendInteractiveList(from, tNew.mainMenu, 'Open menu', [{
+      title: 'Options',
+      rows: [
+        { id: 'main_1', title: 'Buy Property', description: 'Browse homes for sale' },
+        { id: 'main_2', title: 'Rent Property', description: 'See rental options' },
+        { id: 'main_3', title: 'Commercial Property', description: 'Commercial listings' },
+        { id: 'main_4', title: 'List / Sell Property', description: 'List your property' },
+        { id: 'main_5', title: 'Talk to an Agent', description: 'Contact our team' }
+      ]
+    }] );
   }
 
   // ── INQUIRY INTENT ──────────────────────────────────────────────────────────
   if (session.step === 'inquiry_intent') {
-    if (text === '1') session.data.intent = 'Buy';
-    else if (text === '2') session.data.intent = 'Rent';
-    else return await send(from, t.invalid);
+    if (text === '1' || text === 'intent_buy') session.data.intent = 'Buy';
+    else if (text === '2' || text === 'intent_rent') session.data.intent = 'Rent';
+    else return await sendText(from, t.invalid);
     session.step = 'collect_name';
-    return await send(from, t.detailsPrompt);
+    return await sendText(from, t.detailsPrompt);
   }
 
   // ── MAIN MENU ───────────────────────────────────────────────────────────────
   if (session.step === 'main_menu') {
-    if (text === '1') {
+    if (text === '1' || text === 'main_1') {
       const catalog = buildCatalog(BUY_PROPERTIES, t);
       session.step = 'start';
-      return await send(from, `${t.buyTitle}\n${catalog}\n\n👉 ${SITE}/buy\n\nReply *menu* for main menu.`);
+      return await sendText(from, `${t.buyTitle}\n${catalog}\n\n👉 ${SITE}/buy\n\nReply *menu* for main menu.`);
     }
-    if (text === '2') {
+    if (text === '2' || text === 'main_2') {
       const catalog = buildCatalog(RENT_PROPERTIES, t);
       session.step = 'start';
-      return await send(from, `${t.rentTitle}\n${catalog}\n\n👉 ${SITE}/rent\n\nReply *menu* for main menu.`);
+      return await sendText(from, `${t.rentTitle}\n${catalog}\n\n👉 ${SITE}/rent\n\nReply *menu* for main menu.`);
     }
-    if (text === '3') { session.step = 'start'; return await send(from, t.commercial); }
-    if (text === '4') { session.step = 'start'; return await send(from, t.sell); }
-    if (text === '5') {
+    if (text === '3' || text === 'main_3') { session.step = 'start'; return await sendText(from, t.commercial); }
+    if (text === '4' || text === 'main_4') { session.step = 'start'; return await sendText(from, t.sell); }
+    if (text === '5' || text === 'main_5') {
       session.data.intent = 'Agent';
       session.step = 'collect_name';
-      return await send(from, t.agentMenu);
+      return await sendText(from, t.agentMenu);
     }
-    return await send(from, t.invalid);
+    return await sendText(from, t.invalid);
   }
 
   // ── LEAD COLLECTION ─────────────────────────────────────────────────────────
   if (session.step === 'collect_name') {
     session.data.name = text.trim();
     session.step = 'collect_phone';
-    return await send(from, t.askPhone);
+    return await sendText(from, t.askPhone);
   }
   if (session.step === 'collect_phone') {
     session.data.phone = text.trim();
     session.step = 'collect_email';
-    return await send(from, t.askEmail);
+    return await sendText(from, t.askEmail);
   }
   if (session.step === 'collect_email') {
     session.data.email = text.trim();
@@ -213,12 +266,12 @@ async function handleMessage(from, text) {
       language: session.lang
     });
     session.step = 'start';
-    return await send(from, t.thankYou);
+    return await sendText(from, t.thankYou);
   }
 
   // Default fallback
   sessions[from] = { step: 'lang', lang: 'en', data: {} };
-  return await send(from, T.en.welcome);
+  return await sendText(from, T.en.welcome);
 }
 
 // ─── WEBHOOK ──────────────────────────────────────────────────────────────────
@@ -237,8 +290,17 @@ export async function POST(req) {
   try {
     const body = await req.json();
     const message = body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
-    if (!message || message.type !== 'text') return Response.json({ status: 'ok' });
-    await handleMessage(message.from, message.text.body);
+    if (!message) return Response.json({ status: 'ok' });
+
+    let userInput = null;
+    if (message.type === 'text') {
+      userInput = message.text.body;
+    } else if (message.type === 'interactive') {
+      userInput = message.interactive.button_reply?.id || message.interactive.list_reply?.id || message.interactive.button_reply?.title || message.interactive.list_reply?.title || null;
+    }
+
+    if (!userInput) return Response.json({ status: 'ok' });
+    await handleMessage(message.from, userInput);
     return Response.json({ status: 'ok' });
   } catch (err) {
     console.error('Webhook error:', err);
