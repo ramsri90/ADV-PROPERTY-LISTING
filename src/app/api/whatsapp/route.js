@@ -5,7 +5,7 @@ const SITE            = 'https://adv-property-listing-gamma.vercel.app';
 const SHEETS_WEBHOOK = process.env.SHEETS_WEBHOOK_URL;
 
 // ─── PROPERTY DATA ────────────────────────────────────────────────────────────
-const ALL_PROPERTIES = [
+const BUY_PROPERTIES = [
   {
     id: 'p1',
     name: 'Luxury Sea-View Penthouse',
@@ -54,6 +54,9 @@ const ALL_PROPERTIES = [
     url: `${SITE}/property/p6`,
     image: `${SITE}/images/p6.jpg`,
   },
+];
+
+const RENT_PROPERTIES = [
   {
     id: 'p3',
     name: 'Prime Commercial Space',
@@ -80,9 +83,32 @@ const ALL_PROPERTIES = [
   },
 ];
 
-const BUY_PROPERTIES = ALL_PROPERTIES.filter(p => ['p1', 'p2', 'p5', 'p6'].includes(p.id));
-const RENT_PROPERTIES = ALL_PROPERTIES.filter(p => ['p3', 'p4'].includes(p.id));
-const COMMERCIAL_PROPERTIES = ALL_PROPERTIES.filter(p => ['p5', 'p3'].includes(p.id));
+const COMMERCIAL_PROPERTIES = [
+  {
+    id: 'p5',
+    name: 'Modern Tech Office Space',
+    location: 'Hyderabad, Telangana',
+    price: '₹18.00 Cr',
+    beds: null, baths: null,
+    area: '25,000 Sq Ft',
+    type: 'Commercial',
+    desc: 'Grade-A tech office campus in HITEC City with open floor plans, conference suites, cafeteria & dedicated parking.',
+    url: `${SITE}/property/p5`,
+    image: `${SITE}/images/p5.jpg`,
+  },
+  {
+    id: 'p3',
+    name: 'Prime Commercial Space',
+    location: 'New Delhi, Delhi',
+    price: '₹8.50 L/mo',
+    beds: null, baths: null,
+    area: '2,200 Sq Ft',
+    type: 'Commercial',
+    desc: 'Premium retail/office space on Connaught Place with high footfall, 24×7 security & ample parking.',
+    url: `${SITE}/property/p3`,
+    image: `${SITE}/images/p3.jpg`,
+  },
+];
 
 // ─── SESSION STORE ────────────────────────────────────────────────────────────
 const sessions = {};
@@ -94,206 +120,501 @@ function getSession(from) {
 // ─── TRANSLATIONS ─────────────────────────────────────────────────────────────
 const T = {
   en: {
-    welcomeBody:      `👋 Welcome to *Webb Heads*!\n\nPlease select your language to continue:`,
+    welcomeBody:      `👋 Welcome to *Webb Heads* – India's Premium Property Platform!\n\nPlease select your language:`,
     mainMenuBody:     `🏠 *Webb Heads Main Menu*\n\nWhat are you looking for today?`,
+    moreOptionsBody:  `➕ *More Options*\n\nChoose an option below:`,
+    buyTitle:         `🏠 *Properties for Sale*\n\nSwipe through our latest listings ⬅️ ➡️`,
+    rentTitle:        `🏘️ *Properties for Rent*\n\nSwipe through our latest listings ⬅️ ➡️`,
+    commercialTitle:  `🏢 *Commercial Properties*\n\nSwipe through our listings ⬅️ ➡️`,
     askName:          `👤 Please enter your *Full Name*:`,
     askPhone:         `📱 Please enter your *WhatsApp number*:`,
     askEmail:         `📧 Please enter your *Email ID*:`,
-    thankYou:         (name) => `✅ *Thank you${name ? ', ' + name : ''}!* Our executive will contact you shortly.\n\n📞 Direct queries: ${AGENT_PHONE}`,
+    thankYou:         (name) => `✅ *Thank you${name ? ', ' + name : ''}!* Our executive will contact you shortly.\n\n📞 Direct queries: ${AGENT_PHONE}\n🌐 Browse all listings: ${SITE}`,
+    sell:              `📋 *List / Sell Your Property*\n\nOur team will contact you within 24 hours!\n👉 ${SITE}/sell`,
+    website:           `🌐 *Visit our Website*\n\nBrowse all listings at:\n👉 ${SITE}`,
     invalid:           `❌ Please use the buttons below to navigate.`,
-    propCard:          (p, idx, total) => `🏷️ *${p.name}*\n📍 ${p.location}\n💰 ${p.price}\n📐 ${p.area}\n\n📊 ${idx + 1} of ${total}`,
-    propDetail:        (p) => `🏷️ *${p.name}*\n\n📍 *Location:* ${p.location}\n💰 *Price:* ${p.price}\n📐 *Area:* ${p.area}\n🏗️ *Type:* ${p.type}\n\n📝 ${p.desc}\n\n🔗 ${p.url}`,
-    btnBuy: '🏠 Buy', btnRent: '🏘️ Rent', btnCommercial: '🏢 Commercial', btnMore: '➕ More',
-    btnInterested: '✅ Interested', btnMainMenu: '🏠 Main Menu', btnConfirm: '✅ Yes, Contact Me',
+    propCard:          (p, idx, total) =>
+      `🏷️ *${p.name}*\n📍 ${p.location}\n💰 ${p.price}${
+        p.beds ? `  🛏️ ${p.beds}bd/${p.baths}ba` : ''
+      }\n📐 ${p.area}\n\n📊 ${idx + 1} of ${total}`,
+    propDetail:        (p) =>
+      `🏷️ *${p.name}*\n\n📍 *Location:* ${p.location}\n💰 *Price:* ${p.price}\n📐 *Area:* ${p.area}${
+        p.beds ? `\n🛏️ *Beds:* ${p.beds}  🚿 *Baths:* ${p.baths}` : ''
+      }\n🏗️ *Type:* ${p.type}\n\n📝 ${p.desc}\n\n🔗 ${p.url}`,
+    agentPrompt:      `👨‍💼 *Talk to an Agent*\n\nPlease enter your *name*:`,
+    agentAskPhone:    `📱 Enter your *WhatsApp number*:`,
+    agentThankYou:    (name) => `✅ *Hi ${name}!* An agent will call you shortly.\n\n📞 Or call us directly: ${AGENT_PHONE}`,
+    btnBuy:            '🏠 Buy',
+    btnRent:           '🏘️ Rent',
+    btnCommercial:    '🏢 Commercial',
+    btnMore:           '➕ More',
+    btnAgent:          '🧑‍💼 Talk to Agent',
+    btnSell:           '📋 List Property',
+    btnWebsite:        '🌐 Visit Website',
+    btnInterested:    '✅ Interested',
+    btnMainMenu:      '🏠 Main Menu',
+    btnViewDetails:    '📋 View Details',
+    btnConfirm:        '✅ Yes, Contact Me',
   },
-  te: { /* Telugu translations - same as before */ },
-  hi: { /* Hindi translations - same as before */ }
+  te: {
+    welcomeBody:      `👋 *Webb Heads*కి స్వాగతం – భారత్ యొక్క ప్రీమియం ప్రాపర్టీ ప్లాట్‌ఫారమ్!\n\nభాష ఎంచుకోండి:`,
+    mainMenuBody:     `🏠 *Webb Heads మెనూ*\n\nఏం కావాలి?`,
+    moreOptionsBody:  `➕ *మరిన్ని ఎంపికలు*\n\nదిగువ ఒక ఎంపిక చేయండి:`,
+    buyTitle:         `🏠 *అమ్మకానికి ఉన్న ప్రాపర్టీలు*\n\nమా తాజా లిస్టింగ్‌లు చూడండి ⬅️ ➡️`,
+    rentTitle:        `🏘️ *అద్దెకు ఉన్న ప్రాపర్టీలు*\n\nమా తాజా లిస్టింగ్‌లు చూడండి ⬅️ ➡️`,
+    commercialTitle:  `🏢 *కమర్షియల్ ప్రాపర్టీలు*\n\nమా లిస్టింగ్‌లు చూడండి ⬅️ ➡️`,
+    askName:          `👤 దయచేసి మీ *పూర్తి పేరు* నమోదు చేయండి:`,
+    askPhone:         `📱 మీ *WhatsApp నంబర్* నమోదు చేయండి:`,
+    askEmail:         `📧 మీ *ఈమెయిల్ ఐడి* నమోదు చేయండి:`,
+    thankYou:         (name) => `✅ *ధన్యవాదాలు${name ? ', ' + name : ''}!* మా ఎగ్జిక్యూటివ్ త్వరలో సంప్రదిస్తారు.\n\n📞 సందేహాలకు: ${AGENT_PHONE}\n🌐 చూడండి: ${SITE}`,
+    sell:              `📋 *ప్రాపర్టీ లిస్ట్ / అమ్మండి*\n👉 ${SITE}/sell`,
+    website:           `🌐 *మా వెబ్‌సైట్ సందర్శించండి*\n👉 ${SITE}`,
+    invalid:           `❌ దయచేసి బటన్లు వాడండి.`,
+    propCard:          (p, idx, total) =>
+      `🏷️ *${p.name}*\n📍 ${p.location}\n💰 ${p.price}${
+        p.beds ? `  🛏️ ${p.beds}పడ/${p.baths}బా` : ''
+      }\n📐 ${p.area}\n\n📊 ${idx + 1} / ${total}`,
+    propDetail:        (p) =>
+      `🏷️ *${p.name}*\n\n📍 *స్థానం:* ${p.location}\n💰 *ధర:* ${p.price}\n📐 *విస్తీర్ణం:* ${p.area}${
+        p.beds ? `\n🛏️ *పడకలు:* ${p.beds}  🚿 *బాత్‌రూమ్‌లు:* ${p.baths}` : ''
+      }\n🏗️ *రకం:* ${p.type}\n\n📝 ${p.desc}\n\n🔗 ${p.url}`,
+    agentPrompt:      `👨‍💼 *ఏజెంట్‌తో మాట్లాడండి*\n\nమీ *పేరు* నమోదు చేయండి:`,
+    agentAskPhone:    `📱 మీ *WhatsApp నంబర్* నమోదు చేయండి:`,
+    agentThankYou:    (name) => `✅ *నమస్కారం ${name}!* ఒక ఏజెంట్ త్వరలో కాల్ చేస్తారు.\n\n📞 నేరుగా కాల్ చేయండి: ${AGENT_PHONE}`,
+    btnBuy:            '🏠 కొనండి',
+    btnRent:           '🏘️ అద్దెకు',
+    btnCommercial:    '🏢 కమర్షియల్',
+    btnMore:           '➕ మరిన్ని',
+    btnAgent:          '🧑‍💼 ఏజెంట్',
+    btnSell:           '📋 లిస్ట్ చేయండి',
+    btnWebsite:        '🌐 వెబ్‌సైట్',
+    btnInterested:    '✅ ఆసక్తి ఉంది',
+    btnMainMenu:      '🏠 మెనూ',
+    btnViewDetails:    '📋 వివరాలు',
+    btnConfirm:        '✅ సంప్రదించండి',
+  },
+  hi: {
+    welcomeBody:      `👋 *Webb Heads* में आपका स्वागत है – भारत का प्रीमियम प्रॉपर्टी प्लेटफ़ॉर्म!\n\nभाषा चुनें:`,
+    mainMenuBody:     `🏠 *Webb Heads मेनू*\n\nआप क्या ढूंढ रहे हैं?`,
+    moreOptionsBody:  `➕ *और विकल्प*\n\nनीचे से चुनें:`,
+    buyTitle:         `🏠 *बिक्री के लिए प्रॉपर्टी*\n\nहमारी नई लिस्टिंग देखें ⬅️ ➡️`,
+    rentTitle:        `🏘️ *किराये की प्रॉपर्टी*\n\nहमारी नई लिस्टिंग देखें ⬅️ ➡️`,
+    commercialTitle:  `🏢 *कमर्शियल प्रॉपर्टी*\n\nहमारी लिस्टिंग देखें ⬅️ ➡️`,
+    askName:          `👤 कृपया अपना *पूरा नाम* दर्ज करें:`,
+    askPhone:         `📱 अपना *WhatsApp नंबर* दर्ज करें:`,
+    askEmail:         `📧 अपनी *ईमेल आईडी* दर्ज करें:`,
+    thankYou:         (name) => `✅ *धन्यवाद${name ? ', ' + name : ''}!* हमारे एग्जीक्यूटिव जल्द संपर्क करेंगे।\n\n📞 प्रश्नों के लिए: ${AGENT_PHONE}\n🌐 देखें: ${SITE}`,
+    sell:              `📋 *प्रॉपर्टी लिस्ट / बेचें*\n👉 ${SITE}/sell`,
+    website:           `🌐 *हमारी वेबसाइट देखें*\n👉 ${SITE}`,
+    invalid:           `❌ कृपया बटन का उपयोग करें।`,
+    propCard:          (p, idx, total) =>
+      `🏷️ *${p.name}*\n📍 ${p.location}\n💰 ${p.price}${
+        p.beds ? `  🛏️ ${p.beds}bd/${p.baths}ba` : ''
+      }\n📐 ${p.area}\n\n📊 ${idx + 1} / ${total}`,
+    propDetail:        (p) =>
+      `🏷️ *${p.name}*\n\n📍 *स्थान:* ${p.location}\n💰 *कीमत:* ${p.price}\n📐 *क्षेत्र:* ${p.area}${
+        p.beds ? `\n🛏️ *बेड:* ${p.beds}  🚿 *बाथ:* ${p.baths}` : ''
+      }\n🏗️ *प्रकार:* ${p.type}\n\n📝 ${p.desc}\n\n🔗 ${p.url}`,
+    agentPrompt:      `👨‍💼 *एजेंट से बात करें*\n\nअपना *नाम* दर्ज करें:`,
+    agentAskPhone:    `📱 अपना *WhatsApp नंबर* दर्ज करें:`,
+    agentThankYou:    (name) => `✅ *नमस्ते ${name}!* एक एजेंट जल्द कॉल करेगा।\n\n📞 सीधे कॉल करें: ${AGENT_PHONE}`,
+    btnBuy:            '🏠 खरीदें',
+    btnRent:           '🏘️ किराये पर',
+    btnCommercial:    '🏢 कमर्शियल',
+    btnMore:           '➕ और विकल्प',
+    btnAgent:          '🧑‍💼 एजेंट',
+    btnSell:           '📋 लिस्ट करें',
+    btnWebsite:        '🌐 वेबसाइट',
+    btnInterested:    '✅ रुचि है',
+    btnMainMenu:      '🏠 मेनू',
+    btnViewDetails:    '📋 विवरण',
+    btnConfirm:        '✅ संपर्क करें',
+  },
 };
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 async function sendPayload(to, payload) {
   const WA_TOKEN = process.env.WA_TOKEN;
   const PHONE_ID = process.env.PHONE_ID;
-  await fetch(`https://graph.facebook.com/v18.0/${PHONE_ID}/messages`, {
+  const res = await fetch(`https://graph.facebook.com/v18.0/${PHONE_ID}/messages`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${WA_TOKEN}`, 'Content-Type': 'application/json' },
+    headers: {
+      Authorization: `Bearer ${WA_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({ messaging_product: 'whatsapp', to, ...payload }),
   });
+  if (!res.ok) {
+    const err = await res.text();
+    console.error('WA send error:', err);
+  }
 }
 
-async function sendText(to, body) { return sendPayload(to, { type: 'text', text: { body } }); }
+async function sendText(to, body) {
+  return sendPayload(to, { type: 'text', text: { body } });
+}
 
-async function sendButtons(to, bodyText, buttons, headerText = null) {
-  return sendPayload(to, {
+async function sendButtons(to, bodyText, buttons, headerText = null, footerText = null) {
+  const payload = {
     type: 'interactive',
     interactive: {
       type: 'button',
-      header: headerText ? { type: 'text', text: headerText } : undefined,
       body: { text: bodyText },
-      action: { buttons: buttons.map(b => ({ type: 'reply', reply: { id: b.id, title: b.title.substring(0, 20) } })) }
-    }
-  });
+      action: {
+        buttons: buttons.slice(0, 3).map((b) => ({
+          type: 'reply',
+          reply: { id: b.id, title: b.title.substring(0, 20) },
+        })),
+      },
+    },
+  };
+  if (headerText) payload.interactive.header = { type: 'text', text: headerText };
+  if (footerText) payload.interactive.footer = { text: footerText };
+  return sendPayload(to, payload);
+}
+
+async function sendList(to, bodyText, buttonLabel, sections, headerText = null, footerText = null) {
+  const payload = {
+    type: 'interactive',
+    interactive: {
+      type: 'list',
+      body: { text: bodyText },
+      action: { button: buttonLabel, sections },
+    },
+  };
+  if (headerText) payload.interactive.header = { type: 'text', text: headerText };
+  if (footerText) payload.interactive.footer = { text: footerText };
+  return sendPayload(to, payload);
 }
 
 async function sendPropertyCard(to, lang, property, index, total) {
   const t = T[lang] || T['en'];
+  const imageUrl = property.image || `${SITE}/images/default.jpg`;
+
   return sendPayload(to, {
     type: 'interactive',
     interactive: {
       type: 'button',
-      header: { type: 'image', image: { link: property.image } },
+      header: {
+        type: 'image',
+        image: { link: imageUrl },
+      },
       body: { text: t.propCard(property, index, total) },
+      footer: { text: `${property.type} · Webb Heads` },
       action: {
         buttons: [
           { type: 'reply', reply: { id: `prev_prop`, title: '⬅️ Prev' } },
-          { type: 'reply', reply: { id: `interested_${property.id}`, title: t.btnInterested } },
+          { type: 'reply', reply: { id: `interested_${property.id}`, title: t.btnInterested.substring(0, 20) } },
           { type: 'reply', reply: { id: `next_prop`, title: 'Next ➡️' } },
-        ]
-      }
-    }
+        ],
+      },
+    },
   });
 }
 
 async function saveToSheets(data) {
-  if (SHEETS_WEBHOOK) await fetch(SHEETS_WEBHOOK, { method: 'POST', body: JSON.stringify(data) });
+  if (!SHEETS_WEBHOOK) return;
+  try {
+    await fetch(SHEETS_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  } catch (e) {
+    console.error('Sheets save error:', e);
+  }
+}
+
+// ─── INTERACTIVE MESSAGE SENDERS ─────────────────────────────────────────────
+
+function sendLanguagePicker(to) {
+  return sendButtons(
+    to,
+    `👋 Welcome to *Webb Heads* – India's Premium Property Platform!\n\nPlease select your language:`,
+    [
+      { id: 'lang_en', title: 'English' },
+      { id: 'lang_te', title: 'తెలుగు (Telugu)' },
+      { id: 'lang_hi', title: 'हिंदी (Hindi)' },
+    ],
+    'Webb Heads 🏠',
+    "India's Premium Property Platform"
+  );
+}
+
+async function sendMainMenu(to, lang) {
+  const t = T[lang] || T['en'];
+  await sendButtons(
+    to,
+    t.mainMenuBody,
+    [
+      { id: 'menu_buy',        title: t.btnBuy        },
+      { id: 'menu_rent',       title: t.btnRent       },
+      { id: 'menu_commercial', title: t.btnCommercial },
+    ],
+    'Webb Heads 🏠',
+    'Tap a category to explore'
+  );
+
+  return sendButtons(
+    to,
+    `➕ *More Options*\n\nAgent support, list your property or visit our website:`,
+    [{ id: 'menu_more', title: t.btnMore }]
+  );
+}
+
+function sendMoreOptions(to, lang) {
+  const t = T[lang] || T['en'];
+  return sendList(
+    to,
+    t.moreOptionsBody,
+    '📋 Select',
+    [
+      {
+        title: 'Options',
+        rows: [
+          { id: 'menu_agent',   title: t.btnAgent,   description: 'Connect with a property expert'     },
+          { id: 'menu_sell',    title: t.btnSell,    description: 'List or sell your property with us' },
+          { id: 'menu_website', title: t.btnWebsite, description: 'Browse all listings online'          },
+        ],
+      },
+    ],
+    'Webb Heads 🏠',
+    `Reply *hi* to restart`
+  );
+}
+
+async function sendPropertyList(to, lang, session, list, titleKey) {
+  const t = T[lang] || T['en'];
+  session.data.currentList  = list;
+  session.data.currentIndex = 0; // Start at first property
+  await sendText(to, t[titleKey]);
+  return sendPropertyCard(to, lang, list[0], 0, list.length);
+}
+
+async function sendPropertyDetail(to, lang, property) {
+  const t = T[lang] || T['en'];
+  return sendButtons(
+    to,
+    t.propDetail(property),
+    [
+      { id: `confirm_${property.id}`, title: t.btnConfirm  },
+      { id: 'back_menu',              title: t.btnMainMenu },
+    ],
+    null,
+    'Webb Heads 🏠'
+  );
+}
+
+function sendBackToMenu(to, lang, name) {
+  const t = T[lang] || T['en'];
+  return sendButtons(
+    to,
+    t.thankYou(name),
+    [{ id: 'back_menu', title: t.btnMainMenu }]
+  );
 }
 
 // ─── MAIN HANDLER ─────────────────────────────────────────────────────────────
 async function handleMessage(from, text, buttonId) {
   const session = getSession(from);
-  const msg = (text || '').trim();
-  const t = T[session.lang] || T['en'];
+  const msg     = (text || '').toLowerCase().trim();
+  const t       = T[session.lang] || T['en'];
 
-  // 1. DETECT WEBSITE CLICKS (Deep Linking)
-  const isWebClick = msg.toLowerCase().includes("interested in") && msg.toLowerCase().includes("details");
-  if (isWebClick) {
-    const matchedProp = ALL_PROPERTIES.find(p => msg.toLowerCase().includes(p.name.toLowerCase()));
-    if (matchedProp) {
-      session.data.pendingProperty = matchedProp; // Save property for after language pick
-      session.step = 'lang_select';
-      return sendLanguagePicker(from);
-    }
-  }
-
-  // 2. GLOBAL RESET
-  if (['hi', 'hello', 'menu'].includes(msg.toLowerCase()) || buttonId === 'back_menu') {
+  // ── GLOBAL RESET ─────────────────────────────────────────────────────────────
+  if (['hi', 'hello', 'menu', 'start', '/start'].includes(msg) || buttonId === 'back_menu') {
     session.step = 'lang_select';
     session.data = {};
     return sendLanguagePicker(from);
   }
 
-  // 3. LANGUAGE SELECTION
-  if (buttonId?.startsWith('lang_')) {
-    session.lang = buttonId.replace('lang_', '');
-    
-    // If user came from a website click, show THAT property immediately
-    if (session.data.pendingProperty) {
-      const prop = session.data.pendingProperty;
-      session.data.selectedProperty = prop;
-      session.data.intent = 'Website Lead';
-      session.step = 'confirm_interest';
-      delete session.data.pendingProperty;
-      return sendPropertyDetail(from, session.lang, prop);
+  // ── LANGUAGE SELECTION ────────────────────────────────────────────────────────
+  if (session.step === 'lang_select' || buttonId?.startsWith('lang_')) {
+    const langMap = { lang_en: 'en', lang_te: 'te', lang_hi: 'hi' };
+    if (buttonId && langMap[buttonId]) {
+      session.lang = langMap[buttonId];
+    } else if (msg === '1') { session.lang = 'en'; }
+    else if (msg === '2')   { session.lang = 'te'; }
+    else if (msg === '3')   { session.lang = 'hi'; }
+    else {
+      if (session.step === 'lang_select') return sendLanguagePicker(from);
     }
-    
     session.step = 'main_menu';
     return sendMainMenu(from, session.lang);
   }
 
-  // 4. BROWSE LOGIC (Buy/Rent/Commercial)
-  if (buttonId === 'menu_buy') return sendPropertyList(from, session.lang, session, BUY_PROPERTIES, 'buyTitle');
-  if (buttonId === 'menu_rent') return sendPropertyList(from, session.lang, session, RENT_PROPERTIES, 'rentTitle');
-  if (buttonId === 'menu_commercial') return sendPropertyList(from, session.lang, session, COMMERCIAL_PROPERTIES, 'commercialTitle');
+  // ── MAIN MENU SELECTIONS ──────────────────────────────────────────────────────
+  if (buttonId === 'menu_buy') {
+    session.step = 'browse_props';
+    return sendPropertyList(from, session.lang, session, BUY_PROPERTIES, 'buyTitle');
+  }
+  if (buttonId === 'menu_rent') {
+    session.step = 'browse_props';
+    return sendPropertyList(from, session.lang, session, RENT_PROPERTIES, 'rentTitle');
+  }
+  if (buttonId === 'menu_commercial') {
+    session.step = 'browse_props';
+    return sendPropertyList(from, session.lang, session, COMMERCIAL_PROPERTIES, 'commercialTitle');
+  }
 
-  // 5. SLIDER & INTEREST LOGIC
+  // ── MORE OPTIONS ──────────────────────────────────────────────────────────────
+  if (buttonId === 'menu_more') {
+    session.step = 'more_options';
+    return sendMoreOptions(from, session.lang);
+  }
+  if (buttonId === 'menu_agent') {
+    session.step = 'agent_collect_name';
+    session.data.intent = 'Talk to Agent';
+    return sendText(from, t.agentPrompt);
+  }
+  if (buttonId === 'menu_sell') {
+    session.step = 'main_menu';
+    await sendText(from, t.sell);
+    return sendButtons(from, '👇', [{ id: 'back_menu', title: t.btnMainMenu }]);
+  }
+  if (buttonId === 'menu_website') {
+    session.step = 'main_menu';
+    await sendText(from, t.website);
+    return sendButtons(from, '👇', [{ id: 'back_menu', title: t.btnMainMenu }]);
+  }
+
+  // ── SLIDER NAVIGATION (FIXED) ─────────────────────────────────────────────────
   if (buttonId === 'next_prop' || buttonId === 'prev_prop') {
     const list = session.data.currentList;
-    let idx = session.data.currentIndex ?? 0;
-    idx = (buttonId === 'next_prop') ? (idx + 1) % list.length : (idx - 1 + list.length) % list.length;
-    session.data.currentIndex = idx;
-    return sendPropertyCard(from, session.lang, list[idx], idx, list.length);
+    if (!list || list.length === 0) return sendMainMenu(from, session.lang);
+    
+    // Ensure we have a valid index
+    let index = session.data.currentIndex ?? 0;
+    
+    // Calculate new index before rendering
+    if (buttonId === 'next_prop') {
+      index = (index + 1) % list.length;
+    } else {
+      index = (index - 1 + list.length) % list.length;
+    }
+    
+    session.data.currentIndex = index;
+    return sendPropertyCard(from, session.lang, list[index], index, list.length);
   }
 
+  // ── INTERESTED → Show full property detail ────────────────────────────────────
   if (buttonId?.startsWith('interested_')) {
-    const prop = ALL_PROPERTIES.find(p => p.id === buttonId.replace('interested_', ''));
-    session.data.selectedProperty = prop;
-    session.step = 'confirm_interest';
-    return sendPropertyDetail(from, session.lang, prop);
+    const propId = buttonId.replace('interested_', '');
+    const allProps = [...BUY_PROPERTIES, ...RENT_PROPERTIES, ...COMMERCIAL_PROPERTIES];
+    const property = allProps.find((p) => p.id === propId);
+    if (property) {
+      session.data.selectedProperty = property;
+      session.data.intent           = 'Property Interest';
+      session.step                  = 'confirm_interest';
+      return sendPropertyDetail(from, session.lang, property);
+    }
+    return sendMainMenu(from, session.lang);
   }
 
+  // ── CONFIRM INTEREST → Start Lead Capture Sequence ────────────────────────────
   if (buttonId?.startsWith('confirm_')) {
     session.step = 'collect_name';
     return sendText(from, t.askName);
   }
 
-  // 6. LEAD CAPTURE (Name -> Phone -> Email)
+  // ── LEAD CAPTURE FLOW (NAME -> PHONE -> EMAIL) ───────────────────────────────
   if (session.step === 'collect_name') {
-    session.data.leadName = msg;
+    if (!text || text.trim().length < 2) return sendText(from, t.askName);
+    session.data.leadName = text.trim();
     session.step = 'collect_phone';
     return sendText(from, t.askPhone);
   }
+
   if (session.step === 'collect_phone') {
-    session.data.leadPhone = msg.replace(/\D/g,'');
+    const cleaned = (text || '').replace(/[\s\-().]/g, '');
+    if (!cleaned || !/^\+?\d{7,15}$/.test(cleaned)) {
+      return sendText(from, `❌ Invalid Phone.\n\n${t.askPhone}`);
+    }
+    session.data.leadPhone = cleaned;
     session.step = 'collect_email';
     return sendText(from, t.askEmail);
   }
+
   if (session.step === 'collect_email') {
-    session.data.leadEmail = msg;
-    await saveToSheets({ ...session.data, whatsapp: from, time: new Date().toISOString() });
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!text || !emailRegex.test(text.trim())) {
+      return sendText(from, `❌ Invalid Email.\n\n${t.askEmail}`);
+    }
+    session.data.leadEmail = text.trim().toLowerCase();
+
+    // FINAL SAVE TO SHEETS
+    await saveToSheets({
+      name:      session.data.leadName,
+      phone:     session.data.leadPhone,
+      email:     session.data.leadEmail,
+      intent:    session.data.intent   || 'Property Interest',
+      property:  session.data.selectedProperty?.name || 'N/A',
+      location:  session.data.selectedProperty?.location || 'N/A',
+      price:     session.data.selectedProperty?.price || 'N/A',
+      whatsapp:  from,
+      language:  session.lang,
+      time:      new Date().toISOString(),
+    });
+
     const finalName = session.data.leadName;
-    session.step = 'main_menu'; session.data = {};
-    return sendPayload(from, { type: 'interactive', interactive: { type: 'button', body: { text: t.thankYou(finalName) }, action: { buttons: [{ type: 'reply', reply: { id: 'back_menu', title: t.btnMainMenu } }] } } });
+    session.step = 'main_menu';
+    session.data = {};
+    return sendBackToMenu(from, session.lang, finalName);
+  }
+
+  // ── AGENT FLOW (Separate from Property Flow) ──────────────────────────────────
+  if (session.step === 'agent_collect_name') {
+    if (!text || text.trim().length < 2) return sendText(from, t.agentPrompt);
+    session.data.agentName = text.trim();
+    session.step = 'agent_collect_phone';
+    return sendText(from, t.agentAskPhone);
+  }
+
+  if (session.step === 'agent_collect_phone') {
+    const cleaned = (text || '').replace(/[\s\-().]/g, '');
+    if (!cleaned || !/^\+?\d{7,15}$/.test(cleaned)) return sendText(from, t.agentAskPhone);
+    session.data.agentPhone = cleaned;
+    await saveToSheets({
+      name: session.data.agentName, phone: session.data.agentPhone, email: 'N/A',
+      intent: 'Talk to Agent', property: 'N/A', whatsapp: from, language: session.lang, time: new Date().toISOString()
+    });
+    const thankMsg = t.agentThankYou(session.data.agentName);
+    session.step = 'main_menu';
+    session.data = {};
+    await sendText(from, thankMsg);
+    return sendButtons(from, '👇', [{ id: 'back_menu', title: t.btnMainMenu }]);
   }
 
   return sendButtons(from, t.invalid, [{ id: 'back_menu', title: t.btnMainMenu }]);
 }
 
-// ─── ADDITIONAL HELPERS ───────────────────────────────────────────────────────
-function sendLanguagePicker(to) {
-  return sendButtons(to, T.en.welcomeBody, [
-    { id: 'lang_en', title: 'English' },
-    { id: 'lang_te', title: 'తెలుగు' },
-    { id: 'lang_hi', title: 'हिंदी' }
-  ], 'Webb Heads 🏠');
-}
-
-async function sendMainMenu(to, lang) {
-  const t = T[lang] || T['en'];
-  return sendButtons(to, t.mainMenuBody, [
-    { id: 'menu_buy', title: t.btnBuy },
-    { id: 'menu_rent', title: t.btnRent },
-    { id: 'menu_commercial', title: t.btnCommercial }
-  ]);
-}
-
-async function sendPropertyList(to, lang, session, list, titleKey) {
-  session.data.currentList = list; session.data.currentIndex = 0;
-  await sendText(to, T[lang][titleKey]);
-  return sendPropertyCard(to, lang, list[0], 0, list.length);
-}
-
-async function sendPropertyDetail(to, lang, prop) {
-  const t = T[lang] || T['en'];
-  return sendButtons(to, t.propDetail(prop), [
-    { id: `confirm_${prop.id}`, title: t.btnConfirm },
-    { id: 'back_menu', title: t.btnMainMenu }
-  ]);
-}
-
+// ─── WEBHOOK ──────────────────────────────────────────────────────────────────
 export async function POST(req) {
-  const body = await req.json();
-  const msg = body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
-  if (msg) {
-    const from = msg.from;
-    const text = msg.text?.body;
-    const btnId = msg.interactive?.button_reply?.id;
-    await handleMessage(from, text, btnId);
+  try {
+    const body    = await req.json();
+    const entry   = body.entry?.[0];
+    const message = entry?.changes?.[0]?.value?.messages?.[0];
+    if (!message) return Response.json({});
+    const from = message.from;
+
+    if (message.type === 'interactive') {
+      const interactive = message.interactive;
+      const btnId = interactive?.button_reply?.id || interactive?.list_reply?.id;
+      if (btnId) await handleMessage(from, null, btnId);
+    } else if (message.type === 'text') {
+      const text = message.text?.body?.trim();
+      if (text) await handleMessage(from, text, null);
+    }
+    return Response.json({});
+  } catch (err) {
+    console.error('Webhook error:', err);
+    return Response.json({ error: 'Internal error' }, { status: 200 });
   }
-  return Response.json({ success: true });
 }
 
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
-  if (searchParams.get('hub.verify_token') === VERIFY_TOKEN) return new Response(searchParams.get('hub.challenge'));
-  return new Response('Error', { status: 403 });
+  if (searchParams.get('hub.verify_token') === VERIFY_TOKEN) {
+    return new Response(searchParams.get('hub.challenge'));
+  }
+  return new Response('Forbidden', { status: 403 });
 }
