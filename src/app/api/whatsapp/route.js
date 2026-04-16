@@ -128,7 +128,7 @@ const T = {
     commercialTitle:  `🏢 *Commercial Properties*\n\nSwipe through our listings ⬅️ ➡️`,
     askName:          `👤 Please enter your *Full Name*:`,
     askPhone:         `📱 Please enter your *WhatsApp number*:`,
-    askEmail:         `📧 Please enter your *Email Address*:`,
+    askEmail:         `📧 Please enter your *Email ID*:`,
     thankYou:         (name) => `✅ *Thank you${name ? ', ' + name : ''}!* Our executive will contact you shortly.\n\n📞 Direct queries: ${AGENT_PHONE}\n🌐 Browse all listings: ${SITE}`,
     sell:              `📋 *List / Sell Your Property*\n\nOur team will contact you within 24 hours!\n👉 ${SITE}/sell`,
     website:           `🌐 *Visit our Website*\n\nBrowse all listings at:\n👉 ${SITE}`,
@@ -165,7 +165,7 @@ const T = {
     commercialTitle:  `🏢 *కమర్షియల్ ప్రాపర్టీలు*\n\nమా లిస్టింగ్‌లు చూడండి ⬅️ ➡️`,
     askName:          `👤 దయచేసి మీ *పూర్తి పేరు* నమోదు చేయండి:`,
     askPhone:         `📱 మీ *WhatsApp నంబర్* నమోదు చేయండి:`,
-    askEmail:         `📧 మీ *ఈమెయిల్ అడ్రస్* నమోదు చేయండి:`,
+    askEmail:         `📧 మీ *ఈమెయిల్ ఐడి* నమోదు చేయండి:`,
     thankYou:         (name) => `✅ *ధన్యవాదాలు${name ? ', ' + name : ''}!* మా ఎగ్జిక్యూటివ్ త్వరలో సంప్రదిస్తారు.\n\n📞 సందేహాలకు: ${AGENT_PHONE}\n🌐 చూడండి: ${SITE}`,
     sell:              `📋 *ప్రాపర్టీ లిస్ట్ / అమ్మండి*\n👉 ${SITE}/sell`,
     website:           `🌐 *మా వెబ్‌సైట్ సందర్శించండి*\n👉 ${SITE}`,
@@ -202,7 +202,7 @@ const T = {
     commercialTitle:  `🏢 *कमर्शियल प्रॉपर्टी*\n\nहमारी लिस्टिंग देखें ⬅️ ➡️`,
     askName:          `👤 कृपया अपना *पूरा नाम* दर्ज करें:`,
     askPhone:         `📱 अपना *WhatsApp नंबर* दर्ज करें:`,
-    askEmail:         `📧 अपना *ईमेल पता* दर्ज करें:`,
+    askEmail:         `📧 अपनी *ईमेल आईडी* दर्ज करें:`,
     thankYou:         (name) => `✅ *धन्यवाद${name ? ', ' + name : ''}!* हमारे एग्जीक्यूटिव जल्द संपर्क करेंगे।\n\n📞 प्रश्नों के लिए: ${AGENT_PHONE}\n🌐 देखें: ${SITE}`,
     sell:              `📋 *प्रॉपर्टी लिस्ट / बेचें*\n👉 ${SITE}/sell`,
     website:           `🌐 *हमारी वेबसाइट देखें*\n👉 ${SITE}`,
@@ -386,7 +386,7 @@ function sendMoreOptions(to, lang) {
 async function sendPropertyList(to, lang, session, list, titleKey) {
   const t = T[lang] || T['en'];
   session.data.currentList  = list;
-  session.data.currentIndex = 0;
+  session.data.currentIndex = 0; // Start at first property
   await sendText(to, t[titleKey]);
   return sendPropertyCard(to, lang, list[0], 0, list.length);
 }
@@ -477,12 +477,21 @@ async function handleMessage(from, text, buttonId) {
     return sendButtons(from, '👇', [{ id: 'back_menu', title: t.btnMainMenu }]);
   }
 
-  // ── SLIDER NAVIGATION ─────────────────────────────────────────────────────────
+  // ── SLIDER NAVIGATION (FIXED) ─────────────────────────────────────────────────
   if (buttonId === 'next_prop' || buttonId === 'prev_prop') {
     const list = session.data.currentList;
     if (!list || list.length === 0) return sendMainMenu(from, session.lang);
+    
+    // Ensure we have a valid index
     let index = session.data.currentIndex ?? 0;
-    index = (buttonId === 'next_prop') ? (index + 1) % list.length : (index - 1 + list.length) % list.length;
+    
+    // Calculate new index before rendering
+    if (buttonId === 'next_prop') {
+      index = (index + 1) % list.length;
+    } else {
+      index = (index - 1 + list.length) % list.length;
+    }
+    
     session.data.currentIndex = index;
     return sendPropertyCard(from, session.lang, list[index], index, list.length);
   }
@@ -501,13 +510,13 @@ async function handleMessage(from, text, buttonId) {
     return sendMainMenu(from, session.lang);
   }
 
-  // ── CONFIRM INTEREST → Start Lead Capture (Name -> Phone -> Email) ────────────
+  // ── CONFIRM INTEREST → Start Lead Capture Sequence ────────────────────────────
   if (buttonId?.startsWith('confirm_')) {
     session.step = 'collect_name';
     return sendText(from, t.askName);
   }
 
-  // ── LEAD CAPTURE FLOW ──────────────────────────────────────────────────────────
+  // ── LEAD CAPTURE FLOW (NAME -> PHONE -> EMAIL) ───────────────────────────────
   if (session.step === 'collect_name') {
     if (!text || text.trim().length < 2) return sendText(from, t.askName);
     session.data.leadName = text.trim();
@@ -532,7 +541,7 @@ async function handleMessage(from, text, buttonId) {
     }
     session.data.leadEmail = text.trim().toLowerCase();
 
-    // FINISH & SAVE
+    // FINAL SAVE TO SHEETS
     await saveToSheets({
       name:      session.data.leadName,
       phone:     session.data.leadPhone,
