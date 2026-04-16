@@ -29,8 +29,8 @@ export interface BroadcastAudience {
   focus: string;
 }
 
-export const DEFAULT_WHATSAPP_NUMBER = "918367743555";
-export const FLOATING_WHATSAPP_NUMBER = "+91 83677 43555";
+export const DEFAULT_WHATSAPP_NUMBER = "15556574503";
+export const FLOATING_WHATSAPP_NUMBER = "+1 (555) 657-4503";
 
 export const WHATSAPP_LEADS: WhatsappLead[] = [
   {
