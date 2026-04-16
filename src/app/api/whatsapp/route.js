@@ -118,6 +118,7 @@ async function sendText(to, body) {
 
 async function sendInteractiveButtons(to, body, buttons) {
   return await sendPayload(to, {
+    recipient_type: 'individual',
     interactive: {
       type: 'button',
       body: { text: body },
@@ -130,6 +131,7 @@ async function sendInteractiveButtons(to, body, buttons) {
 
 async function sendInteractiveList(to, body, buttonText, sections) {
   return await sendPayload(to, {
+    recipient_type: 'individual',
     interactive: {
       type: 'list',
       body: { text: body },
@@ -141,10 +143,32 @@ async function sendInteractiveList(to, body, buttonText, sections) {
   });
 }
 
+function normalizeReply(text) {
+  return text?.trim().toLowerCase();
+}
+
 function setLang(text) {
-  if (text === '1' || text === 'lang_en') return 'en';
-  if (text === '2' || text === 'lang_te') return 'te';
-  if (text === '3' || text === 'lang_hi') return 'hi';
+  const normalized = normalizeReply(text);
+  if (normalized === '1' || normalized === 'lang_en' || normalized === 'english') return 'en';
+  if (normalized === '2' || normalized === 'lang_te' || normalized === 'తెలుగు') return 'te';
+  if (normalized === '3' || normalized === 'lang_hi' || normalized === 'हिंदी') return 'hi';
+  return null;
+}
+
+function setIntent(text) {
+  const normalized = normalizeReply(text);
+  if (normalized === '1' || normalized === 'intent_buy' || normalized === 'buy') return 'Buy';
+  if (normalized === '2' || normalized === 'intent_rent' || normalized === 'rent') return 'Rent';
+  return null;
+}
+
+function setMenuOption(text) {
+  const normalized = normalizeReply(text);
+  if (normalized === '1' || normalized === 'main_1' || normalized === 'buy property') return 'main_1';
+  if (normalized === '2' || normalized === 'main_2' || normalized === 'rent property') return 'main_2';
+  if (normalized === '3' || normalized === 'main_3' || normalized === 'commercial property') return 'main_3';
+  if (normalized === '4' || normalized === 'main_4' || normalized === 'list / sell property' || normalized === 'list sell property') return 'main_4';
+  if (normalized === '5' || normalized === 'main_5' || normalized === 'talk to an agent') return 'main_5';
   return null;
 }
 
@@ -213,28 +237,29 @@ async function handleMessage(from, text) {
 
   // ── INQUIRY INTENT ──────────────────────────────────────────────────────────
   if (session.step === 'inquiry_intent') {
-    if (text === '1' || text === 'intent_buy') session.data.intent = 'Buy';
-    else if (text === '2' || text === 'intent_rent') session.data.intent = 'Rent';
-    else return await sendText(from, t.invalid);
+    const intent = setIntent(text);
+    if (!intent) return await sendText(from, t.invalid);
+    session.data.intent = intent;
     session.step = 'collect_name';
     return await sendText(from, t.detailsPrompt);
   }
 
   // ── MAIN MENU ───────────────────────────────────────────────────────────────
   if (session.step === 'main_menu') {
-    if (text === '1' || text === 'main_1') {
+    const menuOption = setMenuOption(text);
+    if (menuOption === 'main_1') {
       const catalog = buildCatalog(BUY_PROPERTIES, t);
       session.step = 'start';
       return await sendText(from, `${t.buyTitle}\n${catalog}\n\n👉 ${SITE}/buy\n\nReply *menu* for main menu.`);
     }
-    if (text === '2' || text === 'main_2') {
+    if (menuOption === 'main_2') {
       const catalog = buildCatalog(RENT_PROPERTIES, t);
       session.step = 'start';
       return await sendText(from, `${t.rentTitle}\n${catalog}\n\n👉 ${SITE}/rent\n\nReply *menu* for main menu.`);
     }
-    if (text === '3' || text === 'main_3') { session.step = 'start'; return await sendText(from, t.commercial); }
-    if (text === '4' || text === 'main_4') { session.step = 'start'; return await sendText(from, t.sell); }
-    if (text === '5' || text === 'main_5') {
+    if (menuOption === 'main_3') { session.step = 'start'; return await sendText(from, t.commercial); }
+    if (menuOption === 'main_4') { session.step = 'start'; return await sendText(from, t.sell); }
+    if (menuOption === 'main_5') {
       session.data.intent = 'Agent';
       session.step = 'collect_name';
       return await sendText(from, t.agentMenu);
@@ -293,10 +318,15 @@ export async function POST(req) {
     if (!message) return Response.json({ status: 'ok' });
 
     let userInput = null;
+    const interactive = message.interactive;
     if (message.type === 'text') {
       userInput = message.text.body;
-    } else if (message.type === 'interactive') {
-      userInput = message.interactive.button_reply?.id || message.interactive.list_reply?.id || message.interactive.button_reply?.title || message.interactive.list_reply?.title || null;
+    }
+    if (interactive) {
+      userInput = interactive.button_reply?.id || interactive.list_reply?.id || interactive.button_reply?.title || interactive.list_reply?.title || message.text?.body || userInput;
+    }
+    if (!userInput && message.text?.body) {
+      userInput = message.text.body;
     }
 
     if (!userInput) return Response.json({ status: 'ok' });
