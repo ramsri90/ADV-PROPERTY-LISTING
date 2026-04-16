@@ -252,26 +252,41 @@ async function sendButtons(to, bodyText, buttons, headerText = null, footerText 
  */
 async function sendPropertyCard(to, lang, property) {
   const t = T[lang];
+
+  // 🔥 fallback image if missing
+  const imageUrl = property.image || `${SITE}/images/default.jpg`;
+
   return sendPayload(to, {
     type: 'interactive',
     interactive: {
       type: 'button',
       header: {
         type: 'image',
-        image: { link: property.image },
+        image: { link: imageUrl },
       },
       body: { text: t.propCard(property) },
       footer: { text: property.area },
       action: {
         buttons: [
-          { type: 'reply', reply: { id: `interested_${property.id}`, title: t.btnInterested.substring(0, 20) } },
-          { type: 'reply', reply: { id: 'back_menu', title: t.btnMainMenu.substring(0, 20) } },
+          {
+            type: 'reply',
+            reply: {
+              id: `interested_${property.id}`,
+              title: t.btnInterested.substring(0, 20),
+            },
+          },
+          {
+            type: 'reply',
+            reply: {
+              id: 'back_menu',
+              title: t.btnMainMenu.substring(0, 20),
+            },
+          },
         ],
       },
     },
   });
 }
-
 /**
  * Send a list menu (up to 10 items, grouped in sections).
  */
