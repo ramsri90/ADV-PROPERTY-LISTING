@@ -131,7 +131,6 @@ const T = {
     moreOptionsBody:  `➕ *మరిన్ని ఎంపికలు*\n\nదిగువ ఒక ఎంపిక చేయండి:`,
     buyTitle:         `🏠 *అమ్మకానికి ఉన్న ప్రాపర్టీలు*\n\nమా తాజా లిస్టింగ్‌లు:`,
     rentTitle:        `🏘️ *అద్దెకు ఉన్న ప్రాపర్టీలు*\n\nమా తాజా లిస్టింగ్‌లు:`,
-    moreOptionsBody:  `➕ *మరిన్ని ఎంపికలు*\n\nదిగువ ఒక ఎంపిక చేయండి:`,
     interestedBody:   `మీకు ఏది కావాలి?`,
     detailsPrompt:    `📋 మీ వివరాలు నమోదు చేయండి.\n\n*పూర్తి పేరు* నమోదు చేయండి:`,
     askPhone:         `📱 *ఫోన్ నంబర్* నమోదు చేయండి:`,
@@ -247,7 +246,7 @@ async function sendButtons(to, bodyText, buttons, headerText = null, footerText 
 }
 
 /**
- * Send a property card: image header + body text + Interested | Main Menu buttons.
+ * Send a property card: image header + body text + Prev | Interested | Next buttons.
  * WhatsApp interactive message with image header supports up to 3 buttons.
  */
 async function sendPropertyCard(to, lang, property) {
@@ -270,6 +269,10 @@ async function sendPropertyCard(to, lang, property) {
         buttons: [
           {
             type: 'reply',
+            reply: { id: `prev_${property.id}`, title: '⬅️ Prev' },
+          },
+          {
+            type: 'reply',
             reply: {
               id: `interested_${property.id}`,
               title: t.btnInterested.substring(0, 20),
@@ -277,10 +280,7 @@ async function sendPropertyCard(to, lang, property) {
           },
           {
             type: 'reply',
-            reply: {
-              id: 'back_menu',
-              title: t.btnMainMenu.substring(0, 20),
-            },
+            reply: { id: `next_${property.id}`, title: 'Next ➡️' },
           },
         ],
       },
@@ -380,29 +380,33 @@ function sendMoreOptions(to, lang) {
 }
 
 /**
- * Send all buy property cards sequentially (one per property).
+ * Send first buy property card (slider mode).
  */
-async function sendBuyProperties(to, lang) {
+async function sendBuyProperties(to, lang, session) {
   const t = T[lang];
+
+  session.data.currentList = BUY_PROPERTIES;
+  session.data.currentIndex = 0;
+
   await sendText(to, t.buyTitle);
-  for (const property of BUY_PROPERTIES) {
-    await sendPropertyCard(to, lang, property);
-  }
+  return sendPropertyCard(to, lang, BUY_PROPERTIES[0]);
 }
 
 /**
- * Send all rent property cards sequentially (one per property).
+ * Send first rent property card (slider mode).
  */
-async function sendRentProperties(to, lang) {
+async function sendRentProperties(to, lang, session) {
   const t = T[lang];
+
+  session.data.currentList = RENT_PROPERTIES;
+  session.data.currentIndex = 0;
+
   await sendText(to, t.rentTitle);
-  for (const property of RENT_PROPERTIES) {
-    await sendPropertyCard(to, lang, property);
-  }
+  return sendPropertyCard(to, lang, RENT_PROPERTIES[0]);
 }
 
 /**
- * Send full property detail + Interested | Main Menu buttons.
+ * Send full property detail + Confirm | Main Menu buttons.
  */
 function sendPropertyDetail(to, lang, property) {
   const t = T[lang];
@@ -410,8 +414,8 @@ function sendPropertyDetail(to, lang, property) {
     to,
     t.propDetail(property),
     [
-      { id: `interested_${property.id}`, title: t.btnInterested },
-      { id: 'back_menu',                 title: t.btnMainMenu   },
+      { id: `confirm_${property.id}`, title: t.btnInterested },
+      { id: 'back_menu',              title: t.btnMainMenu   },
     ]
   );
 }
@@ -457,12 +461,12 @@ async function handleMessage(from, text, buttonId) {
   // ── MAIN MENU SELECTIONS ────────────────────────────────────────────────────
   if (buttonId === 'menu_buy') {
     session.step = 'browse_buy';
-    return sendBuyProperties(from, session.lang);
+    return sendBuyProperties(from, session.lang, session);
   }
 
   if (buttonId === 'menu_rent') {
     session.step = 'browse_rent';
-    return sendRentProperties(from, session.lang);
+    return sendRentProperties(from, session.lang, session);
   }
 
   if (buttonId === 'menu_commercial') {
@@ -495,6 +499,22 @@ async function handleMessage(from, text, buttonId) {
     return sendButtons(from, '👇', [{ id: 'back_menu', title: t.btnMainMenu }]);
   }
 
+  // ── SLIDER NAVIGATION (Prev / Next) ─────────────────────────────────────────
+  if (buttonId?.startsWith('next_') || buttonId?.startsWith('prev_')) {
+    const list = session.data.currentList;
+    let index = session.data.currentIndex;
+
+    if (buttonId.startsWith('next_')) {
+      index = (index + 1) % list.length;
+    } else {
+      index = (index - 1 + list.length) % list.length;
+    }
+
+    session.data.currentIndex = index;
+
+    return sendPropertyCard(from, session.lang, list[index]);
+  }
+
   // ── INTERESTED IN A SPECIFIC PROPERTY ───────────────────────────────────────
   // Tapped "Interested" on a property card → show full detail first, then collect lead
   if (buttonId?.startsWith('interested_')) {
@@ -508,10 +528,16 @@ async function handleMessage(from, text, buttonId) {
       session.data.intent = 'Property Interest';
       // Send the detailed card first
       await sendPropertyDetail(from, session.lang, property);
-      // Transition to name collection on next message
-      session.step = 'collect_name';
-      return sendText(from, t.detailsPrompt);
+      // Wait for confirm button before collecting details
+      session.step = 'confirm_interest';
+      return;
     }
+  }
+
+  // ── CONFIRM INTEREST (2nd click → start lead capture) ───────────────────────
+  if (buttonId?.startsWith('confirm_')) {
+    session.step = 'collect_name';
+    return sendText(from, t.detailsPrompt);
   }
 
   // ── LEAD CAPTURE FLOW ────────────────────────────────────────────────────────
