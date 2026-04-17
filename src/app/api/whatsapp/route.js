@@ -58,7 +58,7 @@ const BUY_PROPERTIES = [
 
 const RENT_PROPERTIES = [
   {
-    id: 'p3',
+    id: 'r3',                          // ← FIXED: was 'p3', now 'r3' (unique)
     name: 'Prime Commercial Space',
     location: 'New Delhi, Delhi',
     price: '₹8.50 L/mo',
@@ -70,7 +70,7 @@ const RENT_PROPERTIES = [
     image: `${SITE}/images/p3.jpg`,
   },
   {
-    id: 'p4',
+    id: 'r4',                          // ← FIXED: was 'p4', now 'r4' (unique)
     name: 'Elegant Heritage Apartment',
     location: 'Kolkata, West Bengal',
     price: '₹6.80 L/mo',
@@ -97,7 +97,7 @@ const COMMERCIAL_PROPERTIES = [
     image: `${SITE}/images/p5.jpg`,
   },
   {
-    id: 'p3',
+    id: 'c3',                          // ← FIXED: was 'p3', now 'c3' (unique)
     name: 'Prime Commercial Space',
     location: 'New Delhi, Delhi',
     price: '₹8.50 L/mo',
@@ -109,6 +109,14 @@ const COMMERCIAL_PROPERTIES = [
     image: `${SITE}/images/p3.jpg`,
   },
 ];
+
+// ─── ALL PROPERTIES LOOKUP (single source of truth) ──────────────────────────
+// Built from deduplicated union of all lists.
+const ALL_PROPERTIES = [
+  ...BUY_PROPERTIES,
+  ...RENT_PROPERTIES,
+  ...COMMERCIAL_PROPERTIES,
+].filter((p, idx, arr) => arr.findIndex(x => x.id === p.id) === idx);
 
 // ─── SESSION STORE ────────────────────────────────────────────────────────────
 const sessions = {};
@@ -386,7 +394,7 @@ function sendMoreOptions(to, lang) {
 async function sendPropertyList(to, lang, session, list, titleKey) {
   const t = T[lang] || T['en'];
   session.data.currentList  = list;
-  session.data.currentIndex = 0; // Start at first property
+  session.data.currentIndex = 0;
   await sendText(to, t[titleKey]);
   return sendPropertyCard(to, lang, list[0], 0, list.length);
 }
@@ -477,30 +485,28 @@ async function handleMessage(from, text, buttonId) {
     return sendButtons(from, '👇', [{ id: 'back_menu', title: t.btnMainMenu }]);
   }
 
-  // ── SLIDER NAVIGATION (FIXED) ─────────────────────────────────────────────────
+  // ── SLIDER NAVIGATION ─────────────────────────────────────────────────────────
   if (buttonId === 'next_prop' || buttonId === 'prev_prop') {
     const list = session.data.currentList;
     if (!list || list.length === 0) return sendMainMenu(from, session.lang);
-    
-    // Ensure we have a valid index
+
     let index = session.data.currentIndex ?? 0;
-    
-    // Calculate new index before rendering
+
     if (buttonId === 'next_prop') {
       index = (index + 1) % list.length;
     } else {
       index = (index - 1 + list.length) % list.length;
     }
-    
+
     session.data.currentIndex = index;
     return sendPropertyCard(from, session.lang, list[index], index, list.length);
   }
 
   // ── INTERESTED → Show full property detail ────────────────────────────────────
   if (buttonId?.startsWith('interested_')) {
-    const propId = buttonId.replace('interested_', '');
-    const allProps = [...BUY_PROPERTIES, ...RENT_PROPERTIES, ...COMMERCIAL_PROPERTIES];
-    const property = allProps.find((p) => p.id === propId);
+    const propId   = buttonId.replace('interested_', '');
+    // ✅ FIX: Search ALL_PROPERTIES (deduplicated) so IDs always resolve correctly
+    const property = ALL_PROPERTIES.find((p) => p.id === propId);
     if (property) {
       session.data.selectedProperty = property;
       session.data.intent           = 'Property Interest';
@@ -512,60 +518,67 @@ async function handleMessage(from, text, buttonId) {
 
   // ── CONFIRM INTEREST → Start Lead Capture Sequence ────────────────────────────
   if (buttonId?.startsWith('confirm_')) {
+    // ✅ FIX: Guard — only proceed if we have a selected property (prevents stale button replays)
+    if (!session.data.selectedProperty) {
+      return sendMainMenu(from, session.lang);
+    }
     session.step = 'collect_name';
     return sendText(from, t.askName);
   }
 
-  // ── LEAD CAPTURE FLOW (NAME -> PHONE -> EMAIL) ───────────────────────────────
+  // ── LEAD CAPTURE FLOW (NAME → PHONE → EMAIL) ─────────────────────────────────
+  // ✅ FIX: Each step is checked BEFORE buttonId-based handlers to avoid
+  //         text inputs falling through to the fallback "invalid" message.
+
   if (session.step === 'collect_name') {
     if (!text || text.trim().length < 2) return sendText(from, t.askName);
     session.data.leadName = text.trim();
-    session.step = 'collect_phone';
+    session.step          = 'collect_phone';
     return sendText(from, t.askPhone);
   }
 
   if (session.step === 'collect_phone') {
     const cleaned = (text || '').replace(/[\s\-().]/g, '');
     if (!cleaned || !/^\+?\d{7,15}$/.test(cleaned)) {
-      return sendText(from, `❌ Invalid Phone.\n\n${t.askPhone}`);
+      return sendText(from, `❌ Invalid number.\n\n${t.askPhone}`);
     }
     session.data.leadPhone = cleaned;
-    session.step = 'collect_email';
+    session.step           = 'collect_email';
     return sendText(from, t.askEmail);
   }
 
   if (session.step === 'collect_email') {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!text || !emailRegex.test(text.trim())) {
-      return sendText(from, `❌ Invalid Email.\n\n${t.askEmail}`);
+      return sendText(from, `❌ Invalid email.\n\n${t.askEmail}`);
     }
     session.data.leadEmail = text.trim().toLowerCase();
 
-    // FINAL SAVE TO SHEETS
+    // Save lead to Google Sheets
     await saveToSheets({
       name:      session.data.leadName,
       phone:     session.data.leadPhone,
       email:     session.data.leadEmail,
-      intent:    session.data.intent   || 'Property Interest',
-      property:  session.data.selectedProperty?.name || 'N/A',
+      intent:    session.data.intent                    || 'Property Interest',
+      property:  session.data.selectedProperty?.name    || 'N/A',
       location:  session.data.selectedProperty?.location || 'N/A',
-      price:     session.data.selectedProperty?.price || 'N/A',
+      price:     session.data.selectedProperty?.price   || 'N/A',
       whatsapp:  from,
       language:  session.lang,
       time:      new Date().toISOString(),
     });
 
-    const finalName = session.data.leadName;
-    session.step = 'main_menu';
-    session.data = {};
+    const finalName   = session.data.leadName;
+    session.step      = 'main_menu';
+    session.data      = {};
     return sendBackToMenu(from, session.lang, finalName);
   }
 
-  // ── AGENT FLOW (Separate from Property Flow) ──────────────────────────────────
+  // ── AGENT FLOW ────────────────────────────────────────────────────────────────
   if (session.step === 'agent_collect_name') {
     if (!text || text.trim().length < 2) return sendText(from, t.agentPrompt);
     session.data.agentName = text.trim();
-    session.step = 'agent_collect_phone';
+    session.step           = 'agent_collect_phone';
     return sendText(from, t.agentAskPhone);
   }
 
@@ -574,16 +587,23 @@ async function handleMessage(from, text, buttonId) {
     if (!cleaned || !/^\+?\d{7,15}$/.test(cleaned)) return sendText(from, t.agentAskPhone);
     session.data.agentPhone = cleaned;
     await saveToSheets({
-      name: session.data.agentName, phone: session.data.agentPhone, email: 'N/A',
-      intent: 'Talk to Agent', property: 'N/A', whatsapp: from, language: session.lang, time: new Date().toISOString()
+      name:     session.data.agentName,
+      phone:    session.data.agentPhone,
+      email:    'N/A',
+      intent:   'Talk to Agent',
+      property: 'N/A',
+      whatsapp: from,
+      language: session.lang,
+      time:     new Date().toISOString(),
     });
     const thankMsg = t.agentThankYou(session.data.agentName);
-    session.step = 'main_menu';
-    session.data = {};
+    session.step   = 'main_menu';
+    session.data   = {};
     await sendText(from, thankMsg);
     return sendButtons(from, '👇', [{ id: 'back_menu', title: t.btnMainMenu }]);
   }
 
+  // ── FALLBACK ──────────────────────────────────────────────────────────────────
   return sendButtons(from, t.invalid, [{ id: 'back_menu', title: t.btnMainMenu }]);
 }
 
