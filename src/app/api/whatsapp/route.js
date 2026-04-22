@@ -58,7 +58,7 @@ const BUY_PROPERTIES = [
 
 const RENT_PROPERTIES = [
   {
-    id: 'r3',                          // ← FIXED: was 'p3', now 'r3' (unique)
+    id: 'r3',
     name: 'Prime Commercial Space',
     location: 'New Delhi, Delhi',
     price: '₹8.50 L/mo',
@@ -70,7 +70,7 @@ const RENT_PROPERTIES = [
     image: `${SITE}/images/p3.jpg`,
   },
   {
-    id: 'r4',                          // ← FIXED: was 'p4', now 'r4' (unique)
+    id: 'r4',
     name: 'Elegant Heritage Apartment',
     location: 'Kolkata, West Bengal',
     price: '₹6.80 L/mo',
@@ -97,7 +97,7 @@ const COMMERCIAL_PROPERTIES = [
     image: `${SITE}/images/p5.jpg`,
   },
   {
-    id: 'c3',                          // ← FIXED: was 'p3', now 'c3' (unique)
+    id: 'c3',
     name: 'Prime Commercial Space',
     location: 'New Delhi, Delhi',
     price: '₹8.50 L/mo',
@@ -111,7 +111,6 @@ const COMMERCIAL_PROPERTIES = [
 ];
 
 // ─── ALL PROPERTIES LOOKUP (single source of truth) ──────────────────────────
-// Built from deduplicated union of all lists.
 const ALL_PROPERTIES = [
   ...BUY_PROPERTIES,
   ...RENT_PROPERTIES,
@@ -141,6 +140,8 @@ const T = {
     sell:              `📋 *List / Sell Your Property*\n\nOur team will contact you within 24 hours!\n👉 ${SITE}/sell`,
     website:           `🌐 *Visit our Website*\n\nBrowse all listings at:\n👉 ${SITE}`,
     invalid:           `❌ Please use the buttons below to navigate.`,
+    invalidPhone:      `❌ Invalid number. Please try again.\n\n📱 Please enter your *WhatsApp number*:`,
+    invalidEmail:      `❌ Invalid email. Please try again.\n\n📧 Please enter your *Email ID*:`,
     propCard:          (p, idx, total) =>
       `🏷️ *${p.name}*\n📍 ${p.location}\n💰 ${p.price}${
         p.beds ? `  🛏️ ${p.beds}bd/${p.baths}ba` : ''
@@ -178,6 +179,8 @@ const T = {
     sell:              `📋 *ప్రాపర్టీ లిస్ట్ / అమ్మండి*\n👉 ${SITE}/sell`,
     website:           `🌐 *మా వెబ్‌సైట్ సందర్శించండి*\n👉 ${SITE}`,
     invalid:           `❌ దయచేసి బటన్లు వాడండి.`,
+    invalidPhone:      `❌ తప్పు నంబర్. మళ్ళీ ప్రయత్నించండి.\n\n📱 మీ *WhatsApp నంబర్* నమోదు చేయండి:`,
+    invalidEmail:      `❌ తప్పు ఈమెయిల్. మళ్ళీ ప్రయత్నించండి.\n\n📧 మీ *ఈమెయిల్ ఐడి* నమోదు చేయండి:`,
     propCard:          (p, idx, total) =>
       `🏷️ *${p.name}*\n📍 ${p.location}\n💰 ${p.price}${
         p.beds ? `  🛏️ ${p.beds}పడ/${p.baths}బా` : ''
@@ -215,6 +218,8 @@ const T = {
     sell:              `📋 *प्रॉपर्टी लिस्ट / बेचें*\n👉 ${SITE}/sell`,
     website:           `🌐 *हमारी वेबसाइट देखें*\n👉 ${SITE}`,
     invalid:           `❌ कृपया बटन का उपयोग करें।`,
+    invalidPhone:      `❌ गलत नंबर। फिर से कोशिश करें।\n\n📱 अपना *WhatsApp नंबर* दर्ज करें:`,
+    invalidEmail:      `❌ गलत ईमेल। फिर से कोशिश करें।\n\n📧 अपनी *ईमेल आईडी* दर्ज करें:`,
     propCard:          (p, idx, total) =>
       `🏷️ *${p.name}*\n📍 ${p.location}\n💰 ${p.price}${
         p.beds ? `  🛏️ ${p.beds}bd/${p.baths}ba` : ''
@@ -413,6 +418,7 @@ async function sendPropertyDetail(to, lang, property) {
   );
 }
 
+// ─── FIX: Accept lang explicitly so it's never stale after session.data reset ─
 function sendBackToMenu(to, lang, name) {
   const t = T[lang] || T['en'];
   return sendButtons(
@@ -426,10 +432,20 @@ function sendBackToMenu(to, lang, name) {
 async function handleMessage(from, text, buttonId) {
   const session = getSession(from);
   const msg     = (text || '').toLowerCase().trim();
-  const t       = T[session.lang] || T['en'];
+  const lang    = session.lang || 'en';   // ← snapshot lang ONCE at top
+  const t       = T[lang] || T['en'];
 
   // ── GLOBAL RESET ─────────────────────────────────────────────────────────────
-  if (['hi', 'hello', 'menu', 'start', '/start'].includes(msg) || buttonId === 'back_menu') {
+  // Only reset on explicit "hi/hello/menu" text OR back_menu button.
+  // Do NOT let this interrupt an active lead-capture or agent flow.
+  const isLeadFlow  = ['collect_name', 'collect_phone', 'collect_email'].includes(session.step);
+  const isAgentFlow = ['agent_collect_name', 'agent_collect_phone'].includes(session.step);
+
+  if (
+    (['hi', 'hello', 'menu', 'start', '/start'].includes(msg) || buttonId === 'back_menu') &&
+    !isLeadFlow &&
+    !isAgentFlow
+  ) {
     session.step = 'lang_select';
     session.data = {};
     return sendLanguagePicker(from);
@@ -450,85 +466,8 @@ async function handleMessage(from, text, buttonId) {
     return sendMainMenu(from, session.lang);
   }
 
-  // ── MAIN MENU SELECTIONS ──────────────────────────────────────────────────────
-  if (buttonId === 'menu_buy') {
-    session.step = 'browse_props';
-    return sendPropertyList(from, session.lang, session, BUY_PROPERTIES, 'buyTitle');
-  }
-  if (buttonId === 'menu_rent') {
-    session.step = 'browse_props';
-    return sendPropertyList(from, session.lang, session, RENT_PROPERTIES, 'rentTitle');
-  }
-  if (buttonId === 'menu_commercial') {
-    session.step = 'browse_props';
-    return sendPropertyList(from, session.lang, session, COMMERCIAL_PROPERTIES, 'commercialTitle');
-  }
-
-  // ── MORE OPTIONS ──────────────────────────────────────────────────────────────
-  if (buttonId === 'menu_more') {
-    session.step = 'more_options';
-    return sendMoreOptions(from, session.lang);
-  }
-  if (buttonId === 'menu_agent') {
-    session.step = 'agent_collect_name';
-    session.data.intent = 'Talk to Agent';
-    return sendText(from, t.agentPrompt);
-  }
-  if (buttonId === 'menu_sell') {
-    session.step = 'main_menu';
-    await sendText(from, t.sell);
-    return sendButtons(from, '👇', [{ id: 'back_menu', title: t.btnMainMenu }]);
-  }
-  if (buttonId === 'menu_website') {
-    session.step = 'main_menu';
-    await sendText(from, t.website);
-    return sendButtons(from, '👇', [{ id: 'back_menu', title: t.btnMainMenu }]);
-  }
-
-  // ── SLIDER NAVIGATION ─────────────────────────────────────────────────────────
-  if (buttonId === 'next_prop' || buttonId === 'prev_prop') {
-    const list = session.data.currentList;
-    if (!list || list.length === 0) return sendMainMenu(from, session.lang);
-
-    let index = session.data.currentIndex ?? 0;
-
-    if (buttonId === 'next_prop') {
-      index = (index + 1) % list.length;
-    } else {
-      index = (index - 1 + list.length) % list.length;
-    }
-
-    session.data.currentIndex = index;
-    return sendPropertyCard(from, session.lang, list[index], index, list.length);
-  }
-
-  // ── INTERESTED → Show full property detail ────────────────────────────────────
-  if (buttonId?.startsWith('interested_')) {
-    const propId   = buttonId.replace('interested_', '');
-    // ✅ FIX: Search ALL_PROPERTIES (deduplicated) so IDs always resolve correctly
-    const property = ALL_PROPERTIES.find((p) => p.id === propId);
-    if (property) {
-      session.data.selectedProperty = property;
-      session.data.intent           = 'Property Interest';
-      session.step                  = 'confirm_interest';
-      return sendPropertyDetail(from, session.lang, property);
-    }
-    return sendMainMenu(from, session.lang);
-  }
-
-  // ── CONFIRM INTEREST → Start Lead Capture Sequence ────────────────────────────
-  if (buttonId?.startsWith('confirm_')) {
-    // ✅ FIX: Guard — only proceed if we have a selected property (prevents stale button replays)
-    if (!session.data.selectedProperty) {
-      return sendMainMenu(from, session.lang);
-    }
-    session.step = 'collect_name';
-    return sendText(from, t.askName);
-  }
-
-  // ── LEAD CAPTURE FLOW (NAME → PHONE → EMAIL) ─────────────────────────────────
-  // ✅ FIX: Each step is checked BEFORE buttonId-based handlers to avoid
-  //         text inputs falling through to the fallback "invalid" message.
+  // ── LEAD CAPTURE FLOW — checked FIRST before any button handlers ──────────────
+  // This ensures text input during lead capture is never swallowed by button logic.
 
   if (session.step === 'collect_name') {
     if (!text || text.trim().length < 2) return sendText(from, t.askName);
@@ -540,7 +479,7 @@ async function handleMessage(from, text, buttonId) {
   if (session.step === 'collect_phone') {
     const cleaned = (text || '').replace(/[\s\-().]/g, '');
     if (!cleaned || !/^\+?\d{7,15}$/.test(cleaned)) {
-      return sendText(from, `❌ Invalid number.\n\n${t.askPhone}`);
+      return sendText(from, t.invalidPhone);
     }
     session.data.leadPhone = cleaned;
     session.step           = 'collect_email';
@@ -550,7 +489,7 @@ async function handleMessage(from, text, buttonId) {
   if (session.step === 'collect_email') {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!text || !emailRegex.test(text.trim())) {
-      return sendText(from, `❌ Invalid email.\n\n${t.askEmail}`);
+      return sendText(from, t.invalidEmail);
     }
     session.data.leadEmail = text.trim().toLowerCase();
 
@@ -564,17 +503,21 @@ async function handleMessage(from, text, buttonId) {
       location:  session.data.selectedProperty?.location || 'N/A',
       price:     session.data.selectedProperty?.price   || 'N/A',
       whatsapp:  from,
-      language:  session.lang,
+      language:  lang,
       time:      new Date().toISOString(),
     });
 
-    const finalName   = session.data.leadName;
-    session.step      = 'main_menu';
-    session.data      = {};
-    return sendBackToMenu(from, session.lang, finalName);
+    // ── FIX: Snapshot everything we need BEFORE clearing session.data ─────────
+    const finalName = session.data.leadName;
+    const finalLang = lang;                  // already snapshotted above
+    session.step    = 'main_menu';
+    session.data    = {};
+    // Use snapshotted lang so thank-you message is always in the user's language
+    return sendBackToMenu(from, finalLang, finalName);
   }
 
-  // ── AGENT FLOW ────────────────────────────────────────────────────────────────
+  // ── AGENT FLOW — also checked before button handlers ─────────────────────────
+
   if (session.step === 'agent_collect_name') {
     if (!text || text.trim().length < 2) return sendText(from, t.agentPrompt);
     session.data.agentName = text.trim();
@@ -593,14 +536,98 @@ async function handleMessage(from, text, buttonId) {
       intent:   'Talk to Agent',
       property: 'N/A',
       whatsapp: from,
-      language: session.lang,
+      language: lang,
       time:     new Date().toISOString(),
     });
-    const thankMsg = t.agentThankYou(session.data.agentName);
-    session.step   = 'main_menu';
-    session.data   = {};
+    // ── FIX: Snapshot before clearing ────────────────────────────────────────
+    const agentName = session.data.agentName;
+    const agentLang = lang;
+    session.step    = 'main_menu';
+    session.data    = {};
+    const thankMsg  = (T[agentLang] || T['en']).agentThankYou(agentName);
     await sendText(from, thankMsg);
+    return sendButtons(from, '👇', [{ id: 'back_menu', title: (T[agentLang] || T['en']).btnMainMenu }]);
+  }
+
+  // ── MAIN MENU SELECTIONS ──────────────────────────────────────────────────────
+  if (buttonId === 'menu_buy') {
+    session.step = 'browse_props';
+    return sendPropertyList(from, lang, session, BUY_PROPERTIES, 'buyTitle');
+  }
+  if (buttonId === 'menu_rent') {
+    session.step = 'browse_props';
+    return sendPropertyList(from, lang, session, RENT_PROPERTIES, 'rentTitle');
+  }
+  if (buttonId === 'menu_commercial') {
+    session.step = 'browse_props';
+    return sendPropertyList(from, lang, session, COMMERCIAL_PROPERTIES, 'commercialTitle');
+  }
+
+  // ── MORE OPTIONS ──────────────────────────────────────────────────────────────
+  if (buttonId === 'menu_more') {
+    session.step = 'more_options';
+    return sendMoreOptions(from, lang);
+  }
+  if (buttonId === 'menu_agent') {
+    session.step        = 'agent_collect_name';
+    session.data.intent = 'Talk to Agent';
+    return sendText(from, t.agentPrompt);
+  }
+  if (buttonId === 'menu_sell') {
+    session.step = 'main_menu';
+    await sendText(from, t.sell);
     return sendButtons(from, '👇', [{ id: 'back_menu', title: t.btnMainMenu }]);
+  }
+  if (buttonId === 'menu_website') {
+    session.step = 'main_menu';
+    await sendText(from, t.website);
+    return sendButtons(from, '👇', [{ id: 'back_menu', title: t.btnMainMenu }]);
+  }
+
+  // ── SLIDER NAVIGATION ─────────────────────────────────────────────────────────
+  if (buttonId === 'next_prop' || buttonId === 'prev_prop') {
+    const list = session.data.currentList;
+    if (!list || list.length === 0) return sendMainMenu(from, lang);
+
+    let index = session.data.currentIndex ?? 0;
+    if (buttonId === 'next_prop') {
+      index = (index + 1) % list.length;
+    } else {
+      index = (index - 1 + list.length) % list.length;
+    }
+    session.data.currentIndex = index;
+    return sendPropertyCard(from, lang, list[index], index, list.length);
+  }
+
+  // ── INTERESTED → Show full property detail ────────────────────────────────────
+  if (buttonId?.startsWith('interested_')) {
+    const propId   = buttonId.replace('interested_', '');
+    const property = ALL_PROPERTIES.find((p) => p.id === propId);
+    if (property) {
+      session.data.selectedProperty = property;
+      session.data.intent           = 'Property Interest';
+      session.step                  = 'confirm_interest';
+      return sendPropertyDetail(from, lang, property);
+    }
+    return sendMainMenu(from, lang);
+  }
+
+  // ── CONFIRM INTEREST → Start Lead Capture Sequence ───────────────────────────
+  if (buttonId?.startsWith('confirm_')) {
+    // Guard: must have a selected property; also accept property ID from button
+    // in case session was re-entered
+    if (!session.data.selectedProperty) {
+      const propId   = buttonId.replace('confirm_', '');
+      const property = ALL_PROPERTIES.find((p) => p.id === propId);
+      if (property) {
+        session.data.selectedProperty = property;
+        session.data.intent           = 'Property Interest';
+      } else {
+        return sendMainMenu(from, lang);
+      }
+    }
+    session.step = 'collect_name';
+    return sendText(from, t.askName);
   }
 
   // ── FALLBACK ──────────────────────────────────────────────────────────────────
