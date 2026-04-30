@@ -164,6 +164,9 @@ const T = {
     btnMainMenu:      '🏠 Main Menu',
     btnViewDetails:    '📋 View Details',
     btnConfirm:        '✅ Yes, Contact Me',
+    btnPrev:           '⬅️ Prev',
+    btnNext:           'Next ➡️',
+    selectOption:      '👇',
   },
   te: {
     welcomeBody:      `👋 *Webb Heads*కి స్వాగతం – భారత్ యొక్క ప్రీమియం ప్రాపర్టీ ప్లాట్‌ఫారమ్!\n\nభాష ఎంచుకోండి:`,
@@ -203,6 +206,9 @@ const T = {
     btnMainMenu:      '🏠 మెనూ',
     btnViewDetails:    '📋 వివరాలు',
     btnConfirm:        '✅ సంప్రదించండి',
+    btnPrev:           '⬅️ ముందు',
+    btnNext:           'తర్వాత ➡️',
+    selectOption:      '👇',
   },
   hi: {
     welcomeBody:      `👋 *Webb Heads* में आपका स्वागत है – भारत का प्रीमियम प्रॉपर्टी प्लेटफ़ॉर्म!\n\nभाषा चुनें:`,
@@ -222,11 +228,11 @@ const T = {
     invalidEmail:      `❌ गलत ईमेल। फिर से कोशिश करें।\n\n📧 अपनी *ईमेल आईडी* दर्ज करें:`,
     propCard:          (p, idx, total) =>
       `🏷️ *${p.name}*\n📍 ${p.location}\n💰 ${p.price}${
-        p.beds ? `  🛏️ ${p.beds}bd/${p.baths}ba` : ''
+        p.beds ? `  🛏️ ${p.beds}बेड/${p.baths}बाथ` : ''
       }\n📐 ${p.area}\n\n📊 ${idx + 1} / ${total}`,
     propDetail:        (p) =>
       `🏷️ *${p.name}*\n\n📍 *स्थान:* ${p.location}\n💰 *कीमत:* ${p.price}\n📐 *क्षेत्र:* ${p.area}${
-        p.beds ? `\n🛏️ *बेड:* ${p.beds}  🚿 *बाथ:* ${p.baths}` : ''
+        p.beds ? `\n🛏️ *बेडरूम:* ${p.beds}  🚿 *बाथरूम:* ${p.baths}` : ''
       }\n🏗️ *प्रकार:* ${p.type}\n\n📝 ${p.desc}\n\n🔗 ${p.url}`,
     agentPrompt:      `👨‍💼 *एजेंट से बात करें*\n\nअपना *नाम* दर्ज करें:`,
     agentAskPhone:    `📱 अपना *WhatsApp नंबर* दर्ज करें:`,
@@ -242,6 +248,9 @@ const T = {
     btnMainMenu:      '🏠 मेनू',
     btnViewDetails:    '📋 विवरण',
     btnConfirm:        '✅ संपर्क करें',
+    btnPrev:           '⬅️ पिछला',
+    btnNext:           'अगला ➡️',
+    selectOption:      '👇',
   },
 };
 
@@ -316,9 +325,9 @@ async function sendPropertyCard(to, lang, property, index, total) {
       footer: { text: `${property.type} · Webb Heads` },
       action: {
         buttons: [
-          { type: 'reply', reply: { id: `prev_prop`, title: '⬅️ Prev' } },
+          { type: 'reply', reply: { id: `prev_prop`, title: t.btnPrev.substring(0, 20) } },
           { type: 'reply', reply: { id: `interested_${property.id}`, title: t.btnInterested.substring(0, 20) } },
-          { type: 'reply', reply: { id: `next_prop`, title: 'Next ➡️' } },
+          { type: 'reply', reply: { id: `next_prop`, title: t.btnNext.substring(0, 20) } },
         ],
       },
     },
@@ -370,7 +379,7 @@ async function sendMainMenu(to, lang) {
 
   return sendButtons(
     to,
-    `➕ *More Options*\n\nAgent support, list your property or visit our website:`,
+    t.moreOptionsBody,
     [{ id: 'menu_more', title: t.btnMore }]
   );
 }
@@ -546,7 +555,8 @@ async function handleMessage(from, text, buttonId) {
     session.data    = {};
     const thankMsg  = (T[agentLang] || T['en']).agentThankYou(agentName);
     await sendText(from, thankMsg);
-    return sendButtons(from, '👇', [{ id: 'back_menu', title: (T[agentLang] || T['en']).btnMainMenu }]);
+    const agentT = T[agentLang] || T['en'];
+    return sendButtons(from, agentT.selectOption, [{ id: 'back_menu', title: agentT.btnMainMenu }]);
   }
 
   // ── MAIN MENU SELECTIONS ──────────────────────────────────────────────────────
@@ -576,12 +586,12 @@ async function handleMessage(from, text, buttonId) {
   if (buttonId === 'menu_sell') {
     session.step = 'main_menu';
     await sendText(from, t.sell);
-    return sendButtons(from, '👇', [{ id: 'back_menu', title: t.btnMainMenu }]);
+    return sendButtons(from, t.selectOption, [{ id: 'back_menu', title: t.btnMainMenu }]);
   }
   if (buttonId === 'menu_website') {
     session.step = 'main_menu';
     await sendText(from, t.website);
-    return sendButtons(from, '👇', [{ id: 'back_menu', title: t.btnMainMenu }]);
+    return sendButtons(from, t.selectOption, [{ id: 'back_menu', title: t.btnMainMenu }]);
   }
 
   // ── SLIDER NAVIGATION ─────────────────────────────────────────────────────────
