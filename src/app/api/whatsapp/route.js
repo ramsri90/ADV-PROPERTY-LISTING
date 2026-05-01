@@ -31,6 +31,18 @@ const BUY_PROPERTIES = [
     image: `${SITE}/images/p2.jpg`,
   },
   {
+    id: 'p5',
+    name: 'Modern Tech Office Space',
+    location: 'Hyderabad, Telangana',
+    price: '₹18.00 Cr',
+    beds: null, baths: null,
+    area: '25,000 Sq Ft',
+    type: 'Commercial',
+    desc: 'Grade-A tech office campus in HITEC City with open floor plans, conference suites, cafeteria & dedicated parking.',
+    url: `${SITE}/property/p5`,
+    image: `${SITE}/images/p5.jpg`,
+  },
+  {
     id: 'p6',
     name: 'Serene Waterfront Villa',
     location: 'North Goa, Goa',
@@ -301,14 +313,17 @@ async function sendPropertyCard(to, lang, property, index, total) {
   const t = T[lang] || T['en'];
   const imageUrl = property.image || `${SITE}/images/default.jpg`;
 
-  // Build buttons dynamically: hide Prev on first item, hide Next on last item
+  // ─── FIX 1: Build buttons dynamically — no Prev on first property ──────────
   const buttons = [];
+
   if (index > 0) {
-    buttons.push({ type: 'reply', reply: { id: `prev_prop`, title: t.btnPrev.substring(0, 20) } });
+    buttons.push({ type: 'reply', reply: { id: 'prev_prop', title: t.btnPrev.substring(0, 20) } });
   }
+
   buttons.push({ type: 'reply', reply: { id: `interested_${property.id}`, title: t.btnInterested.substring(0, 20) } });
+
   if (index < total - 1) {
-    buttons.push({ type: 'reply', reply: { id: `next_prop`, title: t.btnNext.substring(0, 20) } });
+    buttons.push({ type: 'reply', reply: { id: 'next_prop', title: t.btnNext.substring(0, 20) } });
   }
 
   return sendPayload(to, {
@@ -321,9 +336,7 @@ async function sendPropertyCard(to, lang, property, index, total) {
       },
       body: { text: t.propCard(property, index, total) },
       footer: { text: `${property.type} · Webb Heads` },
-      action: {
-        buttons,
-      },
+      action: { buttons },
     },
   });
 }
