@@ -14,6 +14,8 @@ const BUY_PROPERTIES = [
     beds: 5, baths: 6,
     area: '6,500 Sq Ft',
     type: 'Residential',
+    typeHi: 'आवासीय',
+    typeTe: 'నివాస',
     desc: 'Stunning 5-bed penthouse with panoramic sea views, private terrace & world-class amenities in the heart of South Mumbai.',
     url: `${SITE}/property/p1`,
     image: `${SITE}/images/p1.jpg`,
@@ -26,21 +28,11 @@ const BUY_PROPERTIES = [
     beds: 4, baths: 4,
     area: '3,800 Sq Ft',
     type: 'Villa',
+    typeHi: 'विला',
+    typeTe: 'విల్లా',
     desc: 'Contemporary 4-bed villa in premium Whitefield gated community with landscaped garden, modular kitchen & solar power.',
     url: `${SITE}/property/p2`,
     image: `${SITE}/images/p2.jpg`,
-  },
-  {
-    id: 'p5',
-    name: 'Modern Tech Office Space',
-    location: 'Hyderabad, Telangana',
-    price: '₹18.00 Cr',
-    beds: null, baths: null,
-    area: '25,000 Sq Ft',
-    type: 'Commercial',
-    desc: 'Grade-A tech office campus in HITEC City with open floor plans, conference suites, cafeteria & dedicated parking.',
-    url: `${SITE}/property/p5`,
-    image: `${SITE}/images/p5.jpg`,
   },
   {
     id: 'p6',
@@ -50,6 +42,8 @@ const BUY_PROPERTIES = [
     beds: 4, baths: 4,
     area: '4,200 Sq Ft',
     type: 'Villa',
+    typeHi: 'विला',
+    typeTe: 'విల్లా',
     desc: 'Exclusive 4-bed villa steps from the beach with infinity pool, lush tropical garden & private boat dock.',
     url: `${SITE}/property/p6`,
     image: `${SITE}/images/p6.jpg`,
@@ -65,6 +59,8 @@ const RENT_PROPERTIES = [
     beds: null, baths: null,
     area: '2,200 Sq Ft',
     type: 'Commercial',
+    typeHi: 'कमर्शियल',
+    typeTe: 'కమర్షియల్',
     desc: 'Premium retail/office space on Connaught Place with high footfall, 24×7 security & ample parking.',
     url: `${SITE}/property/p3`,
     image: `${SITE}/images/p3.jpg`,
@@ -77,6 +73,8 @@ const RENT_PROPERTIES = [
     beds: 3, baths: 3,
     area: '2,500 Sq Ft',
     type: 'Apartment',
+    typeHi: 'अपार्टमेंट',
+    typeTe: 'అపార్ట్మెంట్',
     desc: 'Beautifully restored 3-bed heritage apartment in Alipore with original wooden flooring, high ceilings & modern kitchen.',
     url: `${SITE}/property/p4`,
     image: `${SITE}/images/p4.jpg`,
@@ -92,6 +90,8 @@ const COMMERCIAL_PROPERTIES = [
     beds: null, baths: null,
     area: '25,000 Sq Ft',
     type: 'Commercial',
+    typeHi: 'कमर्शियल',
+    typeTe: 'కమర్షియల్',
     desc: 'Grade-A tech office campus in HITEC City with open floor plans, conference suites, cafeteria & dedicated parking.',
     url: `${SITE}/property/p5`,
     image: `${SITE}/images/p5.jpg`,
@@ -104,6 +104,8 @@ const COMMERCIAL_PROPERTIES = [
     beds: null, baths: null,
     area: '2,200 Sq Ft',
     type: 'Commercial',
+    typeHi: 'कमर्शियल',
+    typeTe: 'కమర్షియల్',
     desc: 'Premium retail/office space on Connaught Place with high footfall, 24×7 security & ample parking.',
     url: `${SITE}/property/p3`,
     image: `${SITE}/images/p3.jpg`,
@@ -166,7 +168,19 @@ const T = {
     btnConfirm:        '✅ Yes, Contact Me',
     btnPrev:           '⬅️ Prev',
     btnNext:           'Next ➡️',
+    btnBack:           '⬅️ Back',
     selectOption:      '👇',
+    listSelect:        '📋 Select',
+    listTitle:         'Options',
+    descAgent:         'Connect with a property expert',
+    descSell:          'List or sell your property with us',
+    descWebsite:       'Browse all listings online',
+    footerRestart:     'Reply *hi* to restart',
+    propType:          (p) => p.type,
+    exploreCategory:   'Tap a category to explore',
+    directInterest:    (p) => `🏷️ *${p.name}*\n\n📍 ${p.location}\n💰 ${p.price}\n📐 ${p.area}${
+        p.beds ? `\n🛏️ ${p.beds}bd/${p.baths}ba` : ''
+      }\n\nGreat choice! Would you like to proceed?`,
   },
   te: {
     welcomeBody:      `👋 *Webb Heads*కి స్వాగతం – భారత్ యొక్క ప్రీమియం ప్రాపర్టీ ప్లాట్‌ఫారమ్!\n\nభాష ఎంచుకోండి:`,
@@ -191,7 +205,7 @@ const T = {
     propDetail:        (p) =>
       `🏷️ *${p.name}*\n\n📍 *స్థానం:* ${p.location}\n💰 *ధర:* ${p.price}\n📐 *విస్తీర్ణం:* ${p.area}${
         p.beds ? `\n🛏️ *పడకలు:* ${p.beds}  🚿 *బాత్‌రూమ్‌లు:* ${p.baths}` : ''
-      }\n🏗️ *రకం:* ${p.type}\n\n📝 ${p.desc}\n\n🔗 ${p.url}`,
+      }\n🏗️ *రకం:* ${p.typeTe || p.type}\n\n📝 ${p.desc}\n\n🔗 ${p.url}`,
     agentPrompt:      `👨‍💼 *ఏజెంట్‌తో మాట్లాడండి*\n\nమీ *పేరు* నమోదు చేయండి:`,
     agentAskPhone:    `📱 మీ *WhatsApp నంబర్* నమోదు చేయండి:`,
     agentThankYou:    (name) => `✅ *నమస్కారం ${name}!* ఒక ఏజెంట్ త్వరలో కాల్ చేస్తారు.\n\n📞 నేరుగా కాల్ చేయండి: ${AGENT_PHONE}`,
@@ -208,7 +222,19 @@ const T = {
     btnConfirm:        '✅ సంప్రదించండి',
     btnPrev:           '⬅️ ముందు',
     btnNext:           'తర్వాత ➡️',
+    btnBack:           '⬅️ వెనుక',
     selectOption:      '👇',
+    listSelect:        '📋 ఎంచుకోండి',
+    listTitle:         'ఎంపికలు',
+    descAgent:         'ఆస్తి నిపుణుడితో కనెక్ట్ అవ్వండి',
+    descSell:          'మీ ఆస్తిని మాతో లిస్ట్ చేయండి లేదా అమ్మండి',
+    descWebsite:       'అన్ని లిస్టింగ్‌లను ఆన్‌లైన్‌లో బ్రౌజ్ చేయండి',
+    footerRestart:     '*hi* పంపడం ద్వారా రీస్టార్ట్ చేయండి',
+    propType:          (p) => p.typeTe || p.type,
+    exploreCategory:   'ఒక వర్గాన్ని ఎంచుకోండి',
+    directInterest:    (p) => `🏷️ *${p.name}*\n\n📍 ${p.location}\n💰 ${p.price}\n📐 ${p.area}${
+        p.beds ? `\n🛏️ ${p.beds}పడ/${p.baths}బా` : ''
+      }\n\nబాగా ఎంచుకున్నారు! ముందుకు సాగాలా?`,
   },
   hi: {
     welcomeBody:      `👋 *Webb Heads* में आपका स्वागत है – भारत का प्रीमियम प्रॉपर्टी प्लेटफ़ॉर्म!\n\nभाषा चुनें:`,
@@ -233,7 +259,7 @@ const T = {
     propDetail:        (p) =>
       `🏷️ *${p.name}*\n\n📍 *स्थान:* ${p.location}\n💰 *कीमत:* ${p.price}\n📐 *क्षेत्र:* ${p.area}${
         p.beds ? `\n🛏️ *बेडरूम:* ${p.beds}  🚿 *बाथरूम:* ${p.baths}` : ''
-      }\n🏗️ *प्रकार:* ${p.type}\n\n📝 ${p.desc}\n\n🔗 ${p.url}`,
+      }\n🏗️ *प्रकार:* ${p.typeHi || p.type}\n\n📝 ${p.desc}\n\n🔗 ${p.url}`,
     agentPrompt:      `👨‍💼 *एजेंट से बात करें*\n\nअपना *नाम* दर्ज करें:`,
     agentAskPhone:    `📱 अपना *WhatsApp नंबर* दर्ज करें:`,
     agentThankYou:    (name) => `✅ *नमस्ते ${name}!* एक एजेंट जल्द कॉल करेगा।\n\n📞 सीधे कॉल करें: ${AGENT_PHONE}`,
@@ -250,7 +276,19 @@ const T = {
     btnConfirm:        '✅ संपर्क करें',
     btnPrev:           '⬅️ पिछला',
     btnNext:           'अगला ➡️',
+    btnBack:           '⬅️ वापस',
     selectOption:      '👇',
+    listSelect:        '📋 चुनें',
+    listTitle:         'विकल्प',
+    descAgent:         'प्रॉपर्टी एक्सपर्ट से जुड़ें',
+    descSell:          'हमारे साथ अपनी प्रॉपर्टी लिस्ट या बेचें',
+    descWebsite:       'सभी लिस्टिंग ऑनलाइन देखें',
+    footerRestart:     '*hi* भेजकर रीस्टार्ट करें',
+    propType:          (p) => p.typeHi || p.type,
+    exploreCategory:   'एक श्रेणी चुनें',
+    directInterest:    (p) => `🏷️ *${p.name}*\n\n📍 ${p.location}\n💰 ${p.price}\n📐 ${p.area}${
+        p.beds ? `\n🛏️ ${p.beds}बेड/${p.baths}बाथ` : ''
+      }\n\nबढ़िया चुनाव! क्या आगे बढ़ना चाहेंगे?`,
   },
 };
 
@@ -258,6 +296,10 @@ const T = {
 async function sendPayload(to, payload) {
   const WA_TOKEN = process.env.WA_TOKEN;
   const PHONE_ID = process.env.PHONE_ID;
+  if (!WA_TOKEN || !PHONE_ID) {
+    console.error('Missing WA_TOKEN or PHONE_ID env variables');
+    return;
+  }
   const res = await fetch(`https://graph.facebook.com/v18.0/${PHONE_ID}/messages`, {
     method: 'POST',
     headers: {
@@ -309,9 +351,40 @@ async function sendList(to, bodyText, buttonLabel, sections, headerText = null, 
   return sendPayload(to, payload);
 }
 
+// ─── FIXED: Dynamic property card buttons based on position ──────────────────
 async function sendPropertyCard(to, lang, property, index, total) {
   const t = T[lang] || T['en'];
   const imageUrl = property.image || `${SITE}/images/default.jpg`;
+
+  // Build buttons dynamically based on position in list
+  const buttons = [];
+
+  if (total === 1) {
+    // Single property: only Interested + Main Menu
+    buttons.push(
+      { type: 'reply', reply: { id: `interested_${property.id}`, title: t.btnInterested.substring(0, 20) } },
+      { type: 'reply', reply: { id: 'back_menu', title: t.btnMainMenu.substring(0, 20) } }
+    );
+  } else if (index === 0) {
+    // First property: Next + Interested (NO Prev)
+    buttons.push(
+      { type: 'reply', reply: { id: `interested_${property.id}`, title: t.btnInterested.substring(0, 20) } },
+      { type: 'reply', reply: { id: `next_prop`, title: t.btnNext.substring(0, 20) } }
+    );
+  } else if (index === total - 1) {
+    // Last property: Prev + Interested (NO Next, or show loop indicator)
+    buttons.push(
+      { type: 'reply', reply: { id: `prev_prop`, title: t.btnPrev.substring(0, 20) } },
+      { type: 'reply', reply: { id: `interested_${property.id}`, title: t.btnInterested.substring(0, 20) } }
+    );
+  } else {
+    // Middle properties: Prev + Interested + Next
+    buttons.push(
+      { type: 'reply', reply: { id: `prev_prop`, title: t.btnPrev.substring(0, 20) } },
+      { type: 'reply', reply: { id: `interested_${property.id}`, title: t.btnInterested.substring(0, 20) } },
+      { type: 'reply', reply: { id: `next_prop`, title: t.btnNext.substring(0, 20) } }
+    );
+  }
 
   return sendPayload(to, {
     type: 'interactive',
@@ -322,14 +395,8 @@ async function sendPropertyCard(to, lang, property, index, total) {
         image: { link: imageUrl },
       },
       body: { text: t.propCard(property, index, total) },
-      footer: { text: `${property.type} · Webb Heads` },
-      action: {
-        buttons: [
-          { type: 'reply', reply: { id: `prev_prop`, title: t.btnPrev.substring(0, 20) } },
-          { type: 'reply', reply: { id: `interested_${property.id}`, title: t.btnInterested.substring(0, 20) } },
-          { type: 'reply', reply: { id: `next_prop`, title: t.btnNext.substring(0, 20) } },
-        ],
-      },
+      footer: { text: `${t.propType(property)} · Webb Heads` },
+      action: { buttons },
     },
   });
 }
@@ -374,8 +441,10 @@ async function sendMainMenu(to, lang) {
       { id: 'menu_commercial', title: t.btnCommercial },
     ],
     'Webb Heads 🏠',
-    'Tap a category to explore'
+    t.exploreCategory
   );
+
+  await new Promise(r => setTimeout(r, 300));
 
   return sendButtons(
     to,
@@ -389,24 +458,28 @@ function sendMoreOptions(to, lang) {
   return sendList(
     to,
     t.moreOptionsBody,
-    '📋 Select',
+    t.listSelect,
     [
       {
-        title: 'Options',
+        title: t.listTitle,
         rows: [
-          { id: 'menu_agent',   title: t.btnAgent,   description: 'Connect with a property expert'     },
-          { id: 'menu_sell',    title: t.btnSell,    description: 'List or sell your property with us' },
-          { id: 'menu_website', title: t.btnWebsite, description: 'Browse all listings online'          },
+          { id: 'menu_agent',   title: t.btnAgent,   description: t.descAgent     },
+          { id: 'menu_sell',    title: t.btnSell,    description: t.descSell },
+          { id: 'menu_website', title: t.btnWebsite, description: t.descWebsite          },
         ],
       },
     ],
     'Webb Heads 🏠',
-    `Reply *hi* to restart`
+    t.footerRestart
   );
 }
 
 async function sendPropertyList(to, lang, session, list, titleKey) {
   const t = T[lang] || T['en'];
+  if (!list || list.length === 0) {
+    await sendText(to, '❌ No properties found.');
+    return sendMainMenu(to, lang);
+  }
   session.data.currentList  = list;
   session.data.currentIndex = 0;
   await sendText(to, t[titleKey]);
@@ -427,7 +500,25 @@ async function sendPropertyDetail(to, lang, property) {
   );
 }
 
-// ─── FIX: Accept lang explicitly so it's never stale after session.data reset ─
+// ─── NEW: Direct interest flow from website wa.me link ───────────────────────
+async function sendDirectPropertyInterest(to, lang, property) {
+  const t = T[lang] || T['en'];
+  session.data.selectedProperty = property;
+  session.data.intent = 'Property Interest (Direct from Website)';
+  session.step = 'confirm_interest';
+
+  return sendButtons(
+    to,
+    t.directInterest(property),
+    [
+      { id: `confirm_${property.id}`, title: t.btnConfirm },
+      { id: 'back_menu', title: t.btnMainMenu },
+    ],
+    null,
+    'Webb Heads 🏠'
+  );
+}
+
 function sendBackToMenu(to, lang, name) {
   const t = T[lang] || T['en'];
   return sendButtons(
@@ -437,27 +528,83 @@ function sendBackToMenu(to, lang, name) {
   );
 }
 
+// ─── NEW: Parse wa.me pre-filled messages ────────────────────────────────────
+function parseDirectInterest(text) {
+  // Pattern: "Hi Priya, I'm interested in [Property Name]. Please share more details."
+  // Or any message containing "interested in" followed by property name
+  if (!text) return null;
+
+  const lower = text.toLowerCase();
+
+  // Check if it's a direct interest message from website
+  if (lower.includes('interested in') || lower.includes('interested')) {
+    // Try to extract property name from the message
+    // Pattern: "interested in [Property Name]"
+    const match = text.match(/interested in (.+?)(?:\.|\,|Please|\?|$)/i);
+    if (match && match[1]) {
+      const searchName = match[1].trim();
+      // Find matching property
+      const property = ALL_PROPERTIES.find(p => 
+        p.name.toLowerCase().includes(searchName.toLowerCase()) ||
+        searchName.toLowerCase().includes(p.name.toLowerCase())
+      );
+      if (property) return property;
+    }
+
+    // Fallback: try matching any property name in the text
+    for (const p of ALL_PROPERTIES) {
+      if (lower.includes(p.name.toLowerCase())) {
+        return p;
+      }
+    }
+  }
+
+  return null;
+}
+
 // ─── MAIN HANDLER ─────────────────────────────────────────────────────────────
 async function handleMessage(from, text, buttonId) {
   const session = getSession(from);
   const msg     = (text || '').toLowerCase().trim();
-  const lang    = session.lang || 'en';   // ← snapshot lang ONCE at top
+  const lang    = session.lang || 'en';
   const t       = T[lang] || T['en'];
 
   // ── GLOBAL RESET ─────────────────────────────────────────────────────────────
-  // Only reset on explicit "hi/hello/menu" text OR back_menu button.
-  // Do NOT let this interrupt an active lead-capture or agent flow.
   const isLeadFlow  = ['collect_name', 'collect_phone', 'collect_email'].includes(session.step);
   const isAgentFlow = ['agent_collect_name', 'agent_collect_phone'].includes(session.step);
 
-  if (
-    (['hi', 'hello', 'menu', 'start', '/start'].includes(msg) || buttonId === 'back_menu') &&
-    !isLeadFlow &&
-    !isAgentFlow
-  ) {
+  // FIX: back_menu button now goes to main menu, NOT language picker
+  if (buttonId === 'back_menu' && !isLeadFlow && !isAgentFlow) {
+    session.step = 'main_menu';
+    // Don't clear session.data here - preserve language and any selected property context
+    return sendMainMenu(from, lang);
+  }
+
+  // Text-based reset: only 'hi', 'hello', 'start', '/start' go to language picker
+  // 'menu' text now goes to main menu directly
+  if (['hi', 'hello', 'start', '/start'].includes(msg) && !isLeadFlow && !isAgentFlow) {
     session.step = 'lang_select';
     session.data = {};
     return sendLanguagePicker(from);
+  }
+
+  // 'menu' text goes to main menu (preserves language)
+  if (msg === 'menu' && !isLeadFlow && !isAgentFlow) {
+    session.step = 'main_menu';
+    return sendMainMenu(from, lang);
+  }
+
+  // ── BLOCK BUTTON CLICKS DURING ACTIVE FLOWS ──────────────────────────────────
+  if (buttonId && (isLeadFlow || isAgentFlow)) {
+    if (isLeadFlow) {
+      if (session.step === 'collect_name') return sendText(from, t.askName);
+      if (session.step === 'collect_phone') return sendText(from, t.askPhone);
+      if (session.step === 'collect_email') return sendText(from, t.askEmail);
+    }
+    if (isAgentFlow) {
+      if (session.step === 'agent_collect_name') return sendText(from, t.agentPrompt);
+      if (session.step === 'agent_collect_phone') return sendText(from, t.agentAskPhone);
+    }
   }
 
   // ── LANGUAGE SELECTION ────────────────────────────────────────────────────────
@@ -475,9 +622,18 @@ async function handleMessage(from, text, buttonId) {
     return sendMainMenu(from, session.lang);
   }
 
-  // ── LEAD CAPTURE FLOW — checked FIRST before any button handlers ──────────────
-  // This ensures text input during lead capture is never swallowed by button logic.
+  // ── DIRECT INTEREST FROM WEBSITE (wa.me pre-filled message) ──────────────────
+  // Check if incoming text is a direct property interest from website
+  if (text && !buttonId && session.step !== 'lang_select') {
+    const directProperty = parseDirectInterest(text);
+    if (directProperty) {
+      // User came from website with pre-filled interest message
+      // Show property card directly with confirm/back options
+      return sendDirectPropertyInterest(from, lang, directProperty);
+    }
+  }
 
+  // ── LEAD CAPTURE FLOW ─────────────────────────────────────────────────────────
   if (session.step === 'collect_name') {
     if (!text || text.trim().length < 2) return sendText(from, t.askName);
     session.data.leadName = text.trim();
@@ -487,7 +643,7 @@ async function handleMessage(from, text, buttonId) {
 
   if (session.step === 'collect_phone') {
     const cleaned = (text || '').replace(/[\s\-().]/g, '');
-    if (!cleaned || !/^\+?\d{7,15}$/.test(cleaned)) {
+    if (!cleaned || !/^\+?\d{10,15}$/.test(cleaned)) {
       return sendText(from, t.invalidPhone);
     }
     session.data.leadPhone = cleaned;
@@ -502,7 +658,6 @@ async function handleMessage(from, text, buttonId) {
     }
     session.data.leadEmail = text.trim().toLowerCase();
 
-    // Save lead to Google Sheets
     await saveToSheets({
       name:      session.data.leadName,
       phone:     session.data.leadPhone,
@@ -516,17 +671,14 @@ async function handleMessage(from, text, buttonId) {
       time:      new Date().toISOString(),
     });
 
-    // ── FIX: Snapshot everything we need BEFORE clearing session.data ─────────
     const finalName = session.data.leadName;
-    const finalLang = lang;                  // already snapshotted above
+    const finalLang = lang;
     session.step    = 'main_menu';
     session.data    = {};
-    // Use snapshotted lang so thank-you message is always in the user's language
     return sendBackToMenu(from, finalLang, finalName);
   }
 
-  // ── AGENT FLOW — also checked before button handlers ─────────────────────────
-
+  // ── AGENT FLOW ────────────────────────────────────────────────────────────────
   if (session.step === 'agent_collect_name') {
     if (!text || text.trim().length < 2) return sendText(from, t.agentPrompt);
     session.data.agentName = text.trim();
@@ -536,7 +688,7 @@ async function handleMessage(from, text, buttonId) {
 
   if (session.step === 'agent_collect_phone') {
     const cleaned = (text || '').replace(/[\s\-().]/g, '');
-    if (!cleaned || !/^\+?\d{7,15}$/.test(cleaned)) return sendText(from, t.agentAskPhone);
+    if (!cleaned || !/^\+?\d{10,15}$/.test(cleaned)) return sendText(from, t.agentAskPhone);
     session.data.agentPhone = cleaned;
     await saveToSheets({
       name:     session.data.agentName,
@@ -548,7 +700,6 @@ async function handleMessage(from, text, buttonId) {
       language: lang,
       time:     new Date().toISOString(),
     });
-    // ── FIX: Snapshot before clearing ────────────────────────────────────────
     const agentName = session.data.agentName;
     const agentLang = lang;
     session.step    = 'main_menu';
@@ -624,8 +775,6 @@ async function handleMessage(from, text, buttonId) {
 
   // ── CONFIRM INTEREST → Start Lead Capture Sequence ───────────────────────────
   if (buttonId?.startsWith('confirm_')) {
-    // Guard: must have a selected property; also accept property ID from button
-    // in case session was re-entered
     if (!session.data.selectedProperty) {
       const propId   = buttonId.replace('confirm_', '');
       const property = ALL_PROPERTIES.find((p) => p.id === propId);
@@ -660,6 +809,9 @@ export async function POST(req) {
     } else if (message.type === 'text') {
       const text = message.text?.body?.trim();
       if (text) await handleMessage(from, text, null);
+    } else {
+      // Handle unsupported message types gracefully
+      console.log(`Unsupported message type received: ${message.type}`);
     }
     return Response.json({});
   } catch (err) {
