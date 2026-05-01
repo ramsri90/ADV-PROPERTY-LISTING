@@ -5,7 +5,6 @@ const SITE            = 'https://adv-property-listing-gamma.vercel.app';
 const SHEETS_WEBHOOK = process.env.SHEETS_WEBHOOK_URL;
 
 // ─── PROPERTY DATA ────────────────────────────────────────────────────────────
-// FIXED: Removed p5 (Commercial office) from BUY - it belongs in Commercial only
 const BUY_PROPERTIES = [
   {
     id: 'p1',
@@ -30,6 +29,18 @@ const BUY_PROPERTIES = [
     desc: 'Contemporary 4-bed villa in premium Whitefield gated community with landscaped garden, modular kitchen & solar power.',
     url: `${SITE}/property/p2`,
     image: `${SITE}/images/p2.jpg`,
+  },
+  {
+    id: 'p5',
+    name: 'Modern Tech Office Space',
+    location: 'Hyderabad, Telangana',
+    price: '₹18.00 Cr',
+    beds: null, baths: null,
+    area: '25,000 Sq Ft',
+    type: 'Commercial',
+    desc: 'Grade-A tech office campus in HITEC City with open floor plans, conference suites, cafeteria & dedicated parking.',
+    url: `${SITE}/property/p5`,
+    image: `${SITE}/images/p5.jpg`,
   },
   {
     id: 'p6',
@@ -116,76 +127,32 @@ function getSession(from) {
 // ─── TRANSLATIONS ─────────────────────────────────────────────────────────────
 const T = {
   en: {
-    welcomeBody:      `👋 Welcome to *Webb Heads* – India's Premium Property Platform!
-
-Please select your language:`,
-    mainMenuBody:     `🏠 *Webb Heads Main Menu*
-
-What are you looking for today?`,
-    moreOptionsBody:  `➕ *More Options*
-
-Choose an option below:`,
-    buyTitle:         `🏠 *Properties for Sale*
-
-Browse our listings 👇`,
-    rentTitle:        `🏘️ *Properties for Rent*
-
-Browse our listings 👇`,
-    commercialTitle:  `🏢 *Commercial Properties*
-
-Browse our listings 👇`,
+    welcomeBody:      `👋 Welcome to *Webb Heads* – India's Premium Property Platform!\n\nPlease select your language:`,
+    mainMenuBody:     `🏠 *Webb Heads Main Menu*\n\nWhat are you looking for today?`,
+    moreOptionsBody:  `➕ *More Options*\n\nChoose an option below:`,
+    buyTitle:         `🏠 *Properties for Sale*\n\nSwipe through our latest listings ⬅️ ➡️`,
+    rentTitle:        `🏘️ *Properties for Rent*\n\nSwipe through our latest listings ⬅️ ➡️`,
+    commercialTitle:  `🏢 *Commercial Properties*\n\nSwipe through our listings ⬅️ ➡️`,
     askName:          `👤 Please enter your *Full Name*:`,
     askPhone:         `📱 Please enter your *WhatsApp number*:`,
     askEmail:         `📧 Please enter your *Email ID*:`,
-    thankYou:         (name) => `✅ *Thank you${name ? ', ' + name : ''}!* Our executive will contact you shortly.
-
-📞 Direct queries: ${AGENT_PHONE}
-🌐 Browse all listings: ${SITE}`,
-    sell:              `📋 *List / Sell Your Property*
-
-Our team will contact you within 24 hours!
-👉 ${SITE}/sell`,
-    website:           `🌐 *Visit our Website*
-
-Browse all listings at:
-👉 ${SITE}`,
+    thankYou:         (name) => `✅ *Thank you${name ? ', ' + name : ''}!* Our executive will contact you shortly.\n\n📞 Direct queries: ${AGENT_PHONE}\n🌐 Browse all listings: ${SITE}`,
+    sell:              `📋 *List / Sell Your Property*\n\nOur team will contact you within 24 hours!\n👉 ${SITE}/sell`,
+    website:           `🌐 *Visit our Website*\n\nBrowse all listings at:\n👉 ${SITE}`,
     invalid:           `❌ Please use the buttons below to navigate.`,
-    invalidPhone:      `❌ Invalid number. Please try again.
-
-📱 Please enter your *WhatsApp number*:`,
-    invalidEmail:      `❌ Invalid email. Please try again.
-
-📧 Please enter your *Email ID*:`,
+    invalidPhone:      `❌ Invalid number. Please try again.\n\n📱 Please enter your *WhatsApp number*:`,
+    invalidEmail:      `❌ Invalid email. Please try again.\n\n📧 Please enter your *Email ID*:`,
     propCard:          (p, idx, total) =>
-      `🏷️ *${p.name}*
-📍 ${p.location}
-💰 ${p.price}${
+      `🏷️ *${p.name}*\n📍 ${p.location}\n💰 ${p.price}${
         p.beds ? `  🛏️ ${p.beds}bd/${p.baths}ba` : ''
-      }
-📐 ${p.area}
-
-📊 ${idx + 1} of ${total}`,
+      }\n📐 ${p.area}\n\n📊 ${idx + 1} of ${total}`,
     propDetail:        (p) =>
-      `🏷️ *${p.name}*
-
-📍 *Location:* ${p.location}
-💰 *Price:* ${p.price}
-📐 *Area:* ${p.area}${
-        p.beds ? `
-🛏️ *Beds:* ${p.beds}  🚿 *Baths:* ${p.baths}` : ''
-      }
-🏗️ *Type:* ${p.type}
-
-📝 ${p.desc}
-
-🔗 ${p.url}`,
-    agentPrompt:      `👨‍💼 *Talk to an Agent*
-
-Please enter your *name*:`,
+      `🏷️ *${p.name}*\n\n📍 *Location:* ${p.location}\n💰 *Price:* ${p.price}\n📐 *Area:* ${p.area}${
+        p.beds ? `\n🛏️ *Beds:* ${p.beds}  🚿 *Baths:* ${p.baths}` : ''
+      }\n🏗️ *Type:* ${p.type}\n\n📝 ${p.desc}\n\n🔗 ${p.url}`,
+    agentPrompt:      `👨‍💼 *Talk to an Agent*\n\nPlease enter your *name*:`,
     agentAskPhone:    `📱 Enter your *WhatsApp number*:`,
-    agentThankYou:    (name) => `✅ *Hi ${name}!* An agent will call you shortly.
-
-📞 Or call us directly: ${AGENT_PHONE}`,
+    agentThankYou:    (name) => `✅ *Hi ${name}!* An agent will call you shortly.\n\n📞 Or call us directly: ${AGENT_PHONE}`,
     btnBuy:            '🏠 Buy',
     btnRent:           '🏘️ Rent',
     btnCommercial:    '🏢 Commercial',
@@ -202,72 +169,32 @@ Please enter your *name*:`,
     selectOption:      '👇',
   },
   te: {
-    welcomeBody:      `👋 *Webb Heads*కి స్వాగతం – భారత్ యొక్క ప్రీమియం ప్రాపర్టీ ప్లాట్‌ఫారమ్!
-
-భాష ఎంచుకోండి:`,
-    mainMenuBody:     `🏠 *Webb Heads మెనూ*
-
-ఏం కావాలి?`,
-    moreOptionsBody:  `➕ *మరిన్ని ఎంపికలు*
-
-దిగువ ఒక ఎంపిక చేయండి:`,
-    buyTitle:         `🏠 *అమ్మకానికి ఉన్న ప్రాపర్టీలు*
-
-మా లిస్టింగ్‌లు చూడండి 👇`,
-    rentTitle:        `🏘️ *అద్దెకు ఉన్న ప్రాపర్టీలు*
-
-మా లిస్టింగ్‌లు చూడండి 👇`,
-    commercialTitle:  `🏢 *కమర్షియల్ ప్రాపర్టీలు*
-
-మా లిస్టింగ్‌లు చూడండి 👇`,
+    welcomeBody:      `👋 *Webb Heads*కి స్వాగతం – భారత్ యొక్క ప్రీమియం ప్రాపర్టీ ప్లాట్‌ఫారమ్!\n\nభాష ఎంచుకోండి:`,
+    mainMenuBody:     `🏠 *Webb Heads మెనూ*\n\nఏం కావాలి?`,
+    moreOptionsBody:  `➕ *మరిన్ని ఎంపికలు*\n\nదిగువ ఒక ఎంపిక చేయండి:`,
+    buyTitle:         `🏠 *అమ్మకానికి ఉన్న ప్రాపర్టీలు*\n\nమా తాజా లిస్టింగ్‌లు చూడండి ⬅️ ➡️`,
+    rentTitle:        `🏘️ *అద్దెకు ఉన్న ప్రాపర్టీలు*\n\nమా తాజా లిస్టింగ్‌లు చూడండి ⬅️ ➡️`,
+    commercialTitle:  `🏢 *కమర్షియల్ ప్రాపర్టీలు*\n\nమా లిస్టింగ్‌లు చూడండి ⬅️ ➡️`,
     askName:          `👤 దయచేసి మీ *పూర్తి పేరు* నమోదు చేయండి:`,
     askPhone:         `📱 మీ *WhatsApp నంబర్* నమోదు చేయండి:`,
     askEmail:         `📧 మీ *ఈమెయిల్ ఐడి* నమోదు చేయండి:`,
-    thankYou:         (name) => `✅ *ధన్యవాదాలు${name ? ', ' + name : ''}!* మా ఎగ్జిక్యూటివ్ త్వరలో సంప్రదిస్తారు.
-
-📞 సందేహాలకు: ${AGENT_PHONE}
-🌐 చూడండి: ${SITE}`,
-    sell:              `📋 *ప్రాపర్టీ లిస్ట్ / అమ్మండి*
-👉 ${SITE}/sell`,
-    website:           `🌐 *మా వెబ్‌సైట్ సందర్శించండి*
-👉 ${SITE}`,
+    thankYou:         (name) => `✅ *ధన్యవాదాలు${name ? ', ' + name : ''}!* మా ఎగ్జిక్యూటివ్ త్వరలో సంప్రదిస్తారు.\n\n📞 సందేహాలకు: ${AGENT_PHONE}\n🌐 చూడండి: ${SITE}`,
+    sell:              `📋 *ప్రాపర్టీ లిస్ట్ / అమ్మండి*\n👉 ${SITE}/sell`,
+    website:           `🌐 *మా వెబ్‌సైట్ సందర్శించండి*\n👉 ${SITE}`,
     invalid:           `❌ దయచేసి బటన్లు వాడండి.`,
-    invalidPhone:      `❌ తప్పు నంబర్. మళ్ళీ ప్రయత్నించండి.
-
-📱 మీ *WhatsApp నంబర్* నమోదు చేయండి:`,
-    invalidEmail:      `❌ తప్పు ఈమెయిల్. మళ్ళీ ప్రయత్నించండి.
-
-📧 మీ *ఈమెయిల్ ఐడి* నమోదు చేయండి:`,
+    invalidPhone:      `❌ తప్పు నంబర్. మళ్ళీ ప్రయత్నించండి.\n\n📱 మీ *WhatsApp నంబర్* నమోదు చేయండి:`,
+    invalidEmail:      `❌ తప్పు ఈమెయిల్. మళ్ళీ ప్రయత్నించండి.\n\n📧 మీ *ఈమెయిల్ ఐడి* నమోదు చేయండి:`,
     propCard:          (p, idx, total) =>
-      `🏷️ *${p.name}*
-📍 ${p.location}
-💰 ${p.price}${
+      `🏷️ *${p.name}*\n📍 ${p.location}\n💰 ${p.price}${
         p.beds ? `  🛏️ ${p.beds}పడ/${p.baths}బా` : ''
-      }
-📐 ${p.area}
-
-📊 ${idx + 1} / ${total}`,
+      }\n📐 ${p.area}\n\n📊 ${idx + 1} / ${total}`,
     propDetail:        (p) =>
-      `🏷️ *${p.name}*
-
-📍 *స్థానం:* ${p.location}
-💰 *ధర:* ${p.price}
-📐 *విస్తీర్ణం:* ${p.area}${
-        p.beds ? `
-🛏️ *పడకలు:* ${p.beds}  🚿 *బాత్‌రూమ్‌లు:* ${p.baths}` : ''
-      }
-🏗️ *రకం:* ${p.type}
-
-📝 ${p.desc}
-
-🔗 ${p.url}`,
-    agentPrompt:      `👨‍💼 *ఏజెంట్‌తో మాట్లాడండి*
-
-మీ *పేరు* నమోదు చేయండి:`,
+      `🏷️ *${p.name}*\n\n📍 *స్థానం:* ${p.location}\n💰 *ధర:* ${p.price}\n📐 *విస్తీర్ణం:* ${p.area}${
+        p.beds ? `\n🛏️ *పడకలు:* ${p.beds}  🚿 *బాత్‌రూమ్‌లు:* ${p.baths}` : ''
+      }\n🏗️ *రకం:* ${p.type}\n\n📝 ${p.desc}\n\n🔗 ${p.url}`,
+    agentPrompt:      `👨‍💼 *ఏజెంట్‌తో మాట్లాడండి*\n\nమీ *పేరు* నమోదు చేయండి:`,
     agentAskPhone:    `📱 మీ *WhatsApp నంబర్* నమోదు చేయండి:`,
-    agentThankYou:    (name) => `✅ *నమస్కారం ${name}!* ఒక ఏజెంట్ త్వరలో కాల్ చేస్తారు.
-
-📞 నేరుగా కాల్ చేయండి: ${AGENT_PHONE}`,
+    agentThankYou:    (name) => `✅ *నమస్కారం ${name}!* ఒక ఏజెంట్ త్వరలో కాల్ చేస్తారు.\n\n📞 నేరుగా కాల్ చేయండి: ${AGENT_PHONE}`,
     btnBuy:            '🏠 కొనండి',
     btnRent:           '🏘️ అద్దెకు',
     btnCommercial:    '🏢 కమర్షియల్',
@@ -284,72 +211,32 @@ Please enter your *name*:`,
     selectOption:      '👇',
   },
   hi: {
-    welcomeBody:      `👋 *Webb Heads* में आपका स्वागत है – भारत का प्रीमियम प्रॉपर्टी प्लेटफ़ॉर्म!
-
-भाषा चुनें:`,
-    mainMenuBody:     `🏠 *Webb Heads मेनू*
-
-आप क्या ढूंढ रहे हैं?`,
-    moreOptionsBody:  `➕ *और विकल्प*
-
-नीचे से चुनें:`,
-    buyTitle:         `🏠 *बिक्री के लिए प्रॉपर्टी*
-
-हमारी लिस्टिंग देखें 👇`,
-    rentTitle:        `🏘️ *किराये की प्रॉपर्टी*
-
-हमारी लिस्टिंग देखें 👇`,
-    commercialTitle:  `🏢 *कमर्शियल प्रॉपर्टी*
-
-हमारी लिस्टिंग देखें 👇`,
+    welcomeBody:      `👋 *Webb Heads* में आपका स्वागत है – भारत का प्रीमियम प्रॉपर्टी प्लेटफ़ॉर्म!\n\nभाषा चुनें:`,
+    mainMenuBody:     `🏠 *Webb Heads मेनू*\n\nआप क्या ढूंढ रहे हैं?`,
+    moreOptionsBody:  `➕ *और विकल्प*\n\nनीचे से चुनें:`,
+    buyTitle:         `🏠 *बिक्री के लिए प्रॉपर्टी*\n\nहमारी नई लिस्टिंग देखें ⬅️ ➡️`,
+    rentTitle:        `🏘️ *किराये की प्रॉपर्टी*\n\nहमारी नई लिस्टिंग देखें ⬅️ ➡️`,
+    commercialTitle:  `🏢 *कमर्शियल प्रॉपर्टी*\n\nहमारी लिस्टिंग देखें ⬅️ ➡️`,
     askName:          `👤 कृपया अपना *पूरा नाम* दर्ज करें:`,
     askPhone:         `📱 अपना *WhatsApp नंबर* दर्ज करें:`,
     askEmail:         `📧 अपनी *ईमेल आईडी* दर्ज करें:`,
-    thankYou:         (name) => `✅ *धन्यवाद${name ? ', ' + name : ''}!* हमारे एग्जीक्यूटिव जल्द संपर्क करेंगे।
-
-📞 प्रश्नों के लिए: ${AGENT_PHONE}
-🌐 देखें: ${SITE}`,
-    sell:              `📋 *प्रॉपर्टी लिस्ट / बेचें*
-👉 ${SITE}/sell`,
-    website:           `🌐 *हमारी वेबसाइट देखें*
-👉 ${SITE}`,
+    thankYou:         (name) => `✅ *धन्यवाद${name ? ', ' + name : ''}!* हमारे एग्जीक्यूटिव जल्द संपर्क करेंगे।\n\n📞 प्रश्नों के लिए: ${AGENT_PHONE}\n🌐 देखें: ${SITE}`,
+    sell:              `📋 *प्रॉपर्टी लिस्ट / बेचें*\n👉 ${SITE}/sell`,
+    website:           `🌐 *हमारी वेबसाइट देखें*\n👉 ${SITE}`,
     invalid:           `❌ कृपया बटन का उपयोग करें।`,
-    invalidPhone:      `❌ गलत नंबर। फिर से कोशिश करें।
-
-📱 अपना *WhatsApp नंबर* दर्ज करें:`,
-    invalidEmail:      `❌ गलत ईमेल। फिर से कोशिश करें।
-
-📧 अपनी *ईमेल आईडी* दर्ज करें:`,
+    invalidPhone:      `❌ गलत नंबर। फिर से कोशिश करें।\n\n📱 अपना *WhatsApp नंबर* दर्ज करें:`,
+    invalidEmail:      `❌ गलत ईमेल। फिर से कोशिश करें।\n\n📧 अपनी *ईमेल आईडी* दर्ज करें:`,
     propCard:          (p, idx, total) =>
-      `🏷️ *${p.name}*
-📍 ${p.location}
-💰 ${p.price}${
+      `🏷️ *${p.name}*\n📍 ${p.location}\n💰 ${p.price}${
         p.beds ? `  🛏️ ${p.beds}बेड/${p.baths}बाथ` : ''
-      }
-📐 ${p.area}
-
-📊 ${idx + 1} / ${total}`,
+      }\n📐 ${p.area}\n\n📊 ${idx + 1} / ${total}`,
     propDetail:        (p) =>
-      `🏷️ *${p.name}*
-
-📍 *स्थान:* ${p.location}
-💰 *कीमत:* ${p.price}
-📐 *क्षेत्र:* ${p.area}${
-        p.beds ? `
-🛏️ *बेडरूम:* ${p.beds}  🚿 *बाथरूम:* ${p.baths}` : ''
-      }
-🏗️ *प्रकार:* ${p.type}
-
-📝 ${p.desc}
-
-🔗 ${p.url}`,
-    agentPrompt:      `👨‍💼 *एजेंट से बात करें*
-
-अपना *नाम* दर्ज करें:`,
+      `🏷️ *${p.name}*\n\n📍 *स्थान:* ${p.location}\n💰 *कीमत:* ${p.price}\n📐 *क्षेत्र:* ${p.area}${
+        p.beds ? `\n🛏️ *बेडरूम:* ${p.beds}  🚿 *बाथरूम:* ${p.baths}` : ''
+      }\n🏗️ *प्रकार:* ${p.type}\n\n📝 ${p.desc}\n\n🔗 ${p.url}`,
+    agentPrompt:      `👨‍💼 *एजेंट से बात करें*\n\nअपना *नाम* दर्ज करें:`,
     agentAskPhone:    `📱 अपना *WhatsApp नंबर* दर्ज करें:`,
-    agentThankYou:    (name) => `✅ *नमस्ते ${name}!* एक एजेंट जल्द कॉल करेगा।
-
-📞 सीधे कॉल करें: ${AGENT_PHONE}`,
+    agentThankYou:    (name) => `✅ *नमस्ते ${name}!* एक एजेंट जल्द कॉल करेगा।\n\n📞 सीधे कॉल करें: ${AGENT_PHONE}`,
     btnBuy:            '🏠 खरीदें',
     btnRent:           '🏘️ किराये पर',
     btnCommercial:    '🏢 कमर्शियल',
@@ -422,40 +309,18 @@ async function sendList(to, bodyText, buttonLabel, sections, headerText = null, 
   return sendPayload(to, payload);
 }
 
-// ─── FIXED: Property card with bounded navigation (NO loop) ───────────────────
 async function sendPropertyCard(to, lang, property, index, total) {
   const t = T[lang] || T['en'];
   const imageUrl = property.image || `${SITE}/images/default.jpg`;
 
-  // Build buttons based on position - NO loop navigation
+  // Build buttons dynamically: hide Prev on first item, hide Next on last item
   const buttons = [];
-
-  if (total === 1) {
-    // Single property: Interested + Main Menu
-    buttons.push(
-      { type: 'reply', reply: { id: `interested_${property.id}`, title: t.btnInterested.substring(0, 20) } },
-      { type: 'reply', reply: { id: 'back_menu', title: t.btnMainMenu.substring(0, 20) } }
-    );
-  } else if (index === 0) {
-    // First property: Interested + Next (NO Prev)
-    buttons.push(
-      { type: 'reply', reply: { id: `interested_${property.id}`, title: t.btnInterested.substring(0, 20) } },
-      { type: 'reply', reply: { id: `next_prop`, title: t.btnNext.substring(0, 20) } }
-    );
-  } else if (index === total - 1) {
-    // Last property: Prev + Interested + Main Menu (NO Next)
-    buttons.push(
-      { type: 'reply', reply: { id: `prev_prop`, title: t.btnPrev.substring(0, 20) } },
-      { type: 'reply', reply: { id: `interested_${property.id}`, title: t.btnInterested.substring(0, 20) } },
-      { type: 'reply', reply: { id: 'back_menu', title: t.btnMainMenu.substring(0, 20) } }
-    );
-  } else {
-    // Middle properties: Prev + Interested + Next
-    buttons.push(
-      { type: 'reply', reply: { id: `prev_prop`, title: t.btnPrev.substring(0, 20) } },
-      { type: 'reply', reply: { id: `interested_${property.id}`, title: t.btnInterested.substring(0, 20) } },
-      { type: 'reply', reply: { id: `next_prop`, title: t.btnNext.substring(0, 20) } }
-    );
+  if (index > 0) {
+    buttons.push({ type: 'reply', reply: { id: `prev_prop`, title: t.btnPrev.substring(0, 20) } });
+  }
+  buttons.push({ type: 'reply', reply: { id: `interested_${property.id}`, title: t.btnInterested.substring(0, 20) } });
+  if (index < total - 1) {
+    buttons.push({ type: 'reply', reply: { id: `next_prop`, title: t.btnNext.substring(0, 20) } });
   }
 
   return sendPayload(to, {
@@ -468,7 +333,9 @@ async function sendPropertyCard(to, lang, property, index, total) {
       },
       body: { text: t.propCard(property, index, total) },
       footer: { text: `${property.type} · Webb Heads` },
-      action: { buttons },
+      action: {
+        buttons,
+      },
     },
   });
 }
@@ -491,9 +358,7 @@ async function saveToSheets(data) {
 function sendLanguagePicker(to) {
   return sendButtons(
     to,
-    `👋 Welcome to *Webb Heads* – India's Premium Property Platform!
-
-Please select your language:`,
+    `👋 Welcome to *Webb Heads* – India's Premium Property Platform!\n\nPlease select your language:`,
     [
       { id: 'lang_en', title: 'English' },
       { id: 'lang_te', title: 'తెలుగు (Telugu)' },
@@ -548,10 +413,6 @@ function sendMoreOptions(to, lang) {
 
 async function sendPropertyList(to, lang, session, list, titleKey) {
   const t = T[lang] || T['en'];
-  if (!list || list.length === 0) {
-    await sendText(to, '❌ No properties found.');
-    return sendMainMenu(to, lang);
-  }
   session.data.currentList  = list;
   session.data.currentIndex = 0;
   await sendText(to, t[titleKey]);
@@ -572,45 +433,6 @@ async function sendPropertyDetail(to, lang, property) {
   );
 }
 
-// ─── NEW: Direct interest from website wa.me link ────────────────────────────
-async function sendDirectPropertyInterest(to, lang, property, userMessage) {
-  const t = T[lang] || T['en'];
-  const session = getSession(to);
-  session.data.selectedProperty = property;
-  session.data.intent = 'Property Interest (Direct from Website)';
-  session.step = 'confirm_interest';
-
-  // Acknowledge user's message from website
-  const ackText = `👋 *Hello!* We received your message:
-
-_"${userMessage}"_
-
-Here's the property you're interested in:`;
-  await sendText(to, ackText);
-
-  // Show property card with Interested + Main Menu buttons
-  const imageUrl = property.image || `${SITE}/images/default.jpg`;
-
-  return sendPayload(to, {
-    type: 'interactive',
-    interactive: {
-      type: 'button',
-      header: {
-        type: 'image',
-        image: { link: imageUrl },
-      },
-      body: { text: t.propCard(property, 0, 1) },
-      footer: { text: `${property.type} · Webb Heads` },
-      action: {
-        buttons: [
-          { type: 'reply', reply: { id: `interested_${property.id}`, title: t.btnInterested.substring(0, 20) } },
-          { type: 'reply', reply: { id: 'back_menu', title: t.btnMainMenu.substring(0, 20) } },
-        ],
-      },
-    },
-  });
-}
-
 // ─── FIX: Accept lang explicitly so it's never stale after session.data reset ─
 function sendBackToMenu(to, lang, name) {
   const t = T[lang] || T['en'];
@@ -621,32 +443,6 @@ function sendBackToMenu(to, lang, name) {
   );
 }
 
-// ─── NEW: Parse wa.me pre-filled messages ────────────────────────────────────
-function parseDirectInterest(text) {
-  if (!text) return null;
-  const lower = text.toLowerCase();
-
-  if (lower.includes('interested in') || lower.includes('interested')) {
-    const match = text.match(/interested in (.+?)(?:\.|\,|Please|\?|$)/i);
-    if (match && match[1]) {
-      const searchName = match[1].trim();
-      const property = ALL_PROPERTIES.find(p => 
-        p.name.toLowerCase().includes(searchName.toLowerCase()) ||
-        searchName.toLowerCase().includes(p.name.toLowerCase())
-      );
-      if (property) return property;
-    }
-
-    for (const p of ALL_PROPERTIES) {
-      if (lower.includes(p.name.toLowerCase())) {
-        return p;
-      }
-    }
-  }
-
-  return null;
-}
-
 // ─── MAIN HANDLER ─────────────────────────────────────────────────────────────
 async function handleMessage(from, text, buttonId) {
   const session = getSession(from);
@@ -655,28 +451,19 @@ async function handleMessage(from, text, buttonId) {
   const t       = T[lang] || T['en'];
 
   // ── GLOBAL RESET ─────────────────────────────────────────────────────────────
-  // Only reset on explicit "hi/hello/start" text OR back_menu button.
+  // Only reset on explicit "hi/hello/menu" text OR back_menu button.
   // Do NOT let this interrupt an active lead-capture or agent flow.
   const isLeadFlow  = ['collect_name', 'collect_phone', 'collect_email'].includes(session.step);
   const isAgentFlow = ['agent_collect_name', 'agent_collect_phone'].includes(session.step);
 
-  // FIXED: back_menu goes to Main Menu, NOT language picker
-  if (buttonId === 'back_menu' && !isLeadFlow && !isAgentFlow) {
-    session.step = 'main_menu';
-    return sendMainMenu(from, lang);
-  }
-
-  // 'hi'/'hello'/'start' → language picker (full reset)
-  if (['hi', 'hello', 'start', '/start'].includes(msg) && !isLeadFlow && !isAgentFlow) {
+  if (
+    (['hi', 'hello', 'menu', 'start', '/start'].includes(msg) || buttonId === 'back_menu') &&
+    !isLeadFlow &&
+    !isAgentFlow
+  ) {
     session.step = 'lang_select';
     session.data = {};
     return sendLanguagePicker(from);
-  }
-
-  // 'menu' text → main menu (keep language)
-  if (msg === 'menu' && !isLeadFlow && !isAgentFlow) {
-    session.step = 'main_menu';
-    return sendMainMenu(from, lang);
   }
 
   // ── LANGUAGE SELECTION ────────────────────────────────────────────────────────
@@ -694,14 +481,6 @@ async function handleMessage(from, text, buttonId) {
     return sendMainMenu(from, session.lang);
   }
 
-  // ── DIRECT INTEREST FROM WEBSITE (wa.me pre-filled message) ────────────────
-  if (text && !buttonId && session.step !== 'lang_select') {
-    const directProperty = parseDirectInterest(text);
-    if (directProperty) {
-      return sendDirectPropertyInterest(from, lang, directProperty, text.trim());
-    }
-  }
-
   // ── LEAD CAPTURE FLOW — checked FIRST before any button handlers ──────────────
   // This ensures text input during lead capture is never swallowed by button logic.
 
@@ -714,7 +493,7 @@ async function handleMessage(from, text, buttonId) {
 
   if (session.step === 'collect_phone') {
     const cleaned = (text || '').replace(/[\s\-().]/g, '');
-    if (!cleaned || !/^\+?\d{10,15}$/.test(cleaned)) {
+    if (!cleaned || !/^\+?\d{7,15}$/.test(cleaned)) {
       return sendText(from, t.invalidPhone);
     }
     session.data.leadPhone = cleaned;
@@ -763,7 +542,7 @@ async function handleMessage(from, text, buttonId) {
 
   if (session.step === 'agent_collect_phone') {
     const cleaned = (text || '').replace(/[\s\-().]/g, '');
-    if (!cleaned || !/^\+?\d{10,15}$/.test(cleaned)) return sendText(from, t.agentAskPhone);
+    if (!cleaned || !/^\+?\d{7,15}$/.test(cleaned)) return sendText(from, t.agentAskPhone);
     session.data.agentPhone = cleaned;
     await saveToSheets({
       name:     session.data.agentName,
@@ -821,24 +600,16 @@ async function handleMessage(from, text, buttonId) {
     return sendButtons(from, t.selectOption, [{ id: 'back_menu', title: t.btnMainMenu }]);
   }
 
-  // ── SLIDER NAVIGATION (NO LOOP - bounded) ─────────────────────────────────────
+  // ── SLIDER NAVIGATION ─────────────────────────────────────────────────────────
   if (buttonId === 'next_prop' || buttonId === 'prev_prop') {
     const list = session.data.currentList;
     if (!list || list.length === 0) return sendMainMenu(from, lang);
 
     let index = session.data.currentIndex ?? 0;
     if (buttonId === 'next_prop') {
-      // Only go next if not at last item
-      if (index < list.length - 1) {
-        index = index + 1;
-      }
-      // At last item: stay there (Next button hidden anyway)
+      index = (index + 1) % list.length;
     } else {
-      // Only go prev if not at first item
-      if (index > 0) {
-        index = index - 1;
-      }
-      // At first item: stay there (Prev button hidden anyway)
+      index = (index - 1 + list.length) % list.length;
     }
     session.data.currentIndex = index;
     return sendPropertyCard(from, lang, list[index], index, list.length);
