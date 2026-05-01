@@ -31,18 +31,6 @@ const BUY_PROPERTIES = [
     image: `${SITE}/images/p2.jpg`,
   },
   {
-    id: 'p5',
-    name: 'Modern Tech Office Space',
-    location: 'Hyderabad, Telangana',
-    price: '₹18.00 Cr',
-    beds: null, baths: null,
-    area: '25,000 Sq Ft',
-    type: 'Commercial',
-    desc: 'Grade-A tech office campus in HITEC City with open floor plans, conference suites, cafeteria & dedicated parking.',
-    url: `${SITE}/property/p5`,
-    image: `${SITE}/images/p5.jpg`,
-  },
-  {
     id: 'p6',
     name: 'Serene Waterfront Villa',
     location: 'North Goa, Goa',
